@@ -14,7 +14,13 @@ function makeElement(node:VirtualNode):Dynamic {
 
 	for (prop in Reflect.fields(node.props)) {
 		var value = Reflect.field(node.props, prop);
-		if (Reflect.isFunction(value)) {
+		if (prop == "style") {
+			for (attribute in Reflect.fields(value)) {
+				var styleKey = camelToKebabCase(attribute);
+				var styleValue = parseCssValue(value, attribute);
+				Reflect.setField(el.style, styleKey, styleValue);
+			}
+		} else if (Reflect.isFunction(value)) {
 			var callbackId = CallbackManager.registerCallback(value);
 			el.addEventListener(prop, (event) -> CallbackManager.invokeCallback(callbackId, event));
 		} else {
@@ -31,4 +37,21 @@ function makeElement(node:VirtualNode):Dynamic {
 	}
 
 	return el;
+}
+
+function camelToKebabCase(str:String):String {
+	var reg = new EReg("[A-Z]", "g");
+	return reg.map(str, (match) -> "-" + match.matched(0).toLowerCase());
+}
+
+function parseCssValue(style:Dynamic, key:String):String {
+	switch key {
+	case "fontSize", "width", "height", "top", "left", "right", "bottom",
+		 "margin", "marginTop", "marginRight", "marginBottom", "marginLeft",
+		 "padding", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft",
+		 "borderWidth", "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth":
+		return '${Reflect.field(style, key)}px';
+	default:
+		return Reflect.field(style, key);
+	}
 }

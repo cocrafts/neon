@@ -7,8 +7,16 @@ function View(props:Dynamic, children:Dynamic):VirtualNode {
 	return createElement("div", props, children);
 }
 
+function A(props:Dynamic, children:Dynamic):VirtualNode {
+	return createElement("a", props, children);
+}
+
 function P(props:Dynamic, children:Dynamic):VirtualNode {
 	return createElement("p", props, children);
+}
+
+function Span(props:Dynamic, children:Dynamic):VirtualNode {
+	return createElement("span", props, children);
 }
 
 function H1(props:Dynamic, children:Dynamic):VirtualNode {
