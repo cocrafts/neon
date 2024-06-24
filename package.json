@@ -1,0 +1,23 @@
+{
+  "name": "@metacraft/neon",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "deploy": "sst deploy",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@metacraft/eslint-config": "^0.1.3",
+    "@metacraft/tsconfig": "^0.0.2",
+    "sst": "^2.43.2",
+    "vite": "^5.2.0",
+    "vite-plugin-haxe": "^0.1.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "yarn@4.2.2"
+}

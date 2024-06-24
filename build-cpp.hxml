@@ -1,0 +1,6 @@
+-cp src
+-main neon.Main
+-dce full
+
+-cpp out/cpp
+-debug

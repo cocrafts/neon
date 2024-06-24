@@ -1,0 +1,9 @@
+-cp src
+-main neon.Main
+-dce full
+
+# -js isn't needed, but helpful for IDE's.
+-js out/neon/main.js
+
+-D source-map-content
+-debug
