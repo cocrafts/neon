@@ -1,6 +1,7 @@
 .sst
 .yarn/install-state.gz
 
+build
 dist
 out
 

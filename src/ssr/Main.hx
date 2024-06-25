@@ -1,17 +1,27 @@
-package site;
+package ssr;
 
-import js.Browser.document;
+import sys.io.File;
 import neon.core.Builder;
 import neon.core.Element;
-import neon.web.Client.NeonDom;
+import neon.web.Server.NeonDom;
+import neon.runtime.Lambda;
 
 class Main {
+	private static var template:String;
+
 	static function main() {
-		var el = View({ id: "app", className: "container" }, [
-			Branding({ main: "neon", sub: "Build cross-platform Apps with native runtime!" }),
+		if (template == null)
+			template = File.getContent('index.html');
+
+		new Lambda().start(lambdaHandler);
+	}
+
+	static function lambdaHandler(event:Dynamic, context:LambdaContext):Dynamic {
+		var app = View({ id: "app", className: "container" }, [
+			Branding({ main: "neon", sub: "Build cross-platform Apps with native runtime" }),
 		]);
 
-		NeonDom.render(el, document.body);
+		return NeonDom.renderToString(app, template);
 	}
 
 	public static function getMessage(name: String): Greeting {	
@@ -22,9 +32,6 @@ class Main {
 function Branding(props: { main:String, sub:String }):VirtualNode {
 	return View({ 
 		style: styles.brandingContainer,
-		click: function() {
-			js.Browser.window.open(githubLink);
-		},
 	}, [
 		Span({ style: styles.mainText }, props.main),
 		Span({ style: styles.subText }, props.sub),
