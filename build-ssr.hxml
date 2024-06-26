@@ -3,17 +3,18 @@
 -dce full
 
 --library haxe-c-bridge
+--library tink_http
 #--library tink_await
-#--library tink_http
 #-D static_link
--D HXCPP_VERBOSE
--D HXCPP_ARM64
--D linux
+#-D HXCPP_VERBOSE
+#-D HXCPP_ARM64
+#-D linux
 
 -cpp out/ssr
 # -I ~/Projects/aws-lambda-cpp/include
 
 --cmd cp -r index.html out/ssr/
+--cmd cp -r out/ssr/Main-debug out/ssr/boostrap
 
 -D source-map-content
-# -debug
+-debug

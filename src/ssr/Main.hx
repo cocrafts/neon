@@ -1,5 +1,6 @@
 package ssr;
 
+import haxe.Json;
 import sys.io.File;
 import neon.core.Builder;
 import neon.core.Element;
@@ -21,7 +22,10 @@ class Main {
 			Branding({ main: "neon", sub: "Build cross-platform Apps with native runtime" }),
 		]);
 
-		return NeonDom.renderToString(app, template);
+		return {
+			statusCode: 200,
+			body: NeonDom.renderToString(app, template),
+		};
 	}
 
 	public static function getMessage(name: String): Greeting {	
