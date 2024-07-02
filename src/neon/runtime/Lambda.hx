@@ -18,16 +18,17 @@ typedef LambdaContext = {
 
 class Lambda {
 	public var context:LambdaContext;
+
 	private var runtimeBase:String;
 	private var memorySize:Int = 256;
 
-	public function start(handler: (event:Dynamic, context:LambdaContext)->Dynamic) {
-		while (true) { /* this is a must for Lambda runtime, keep the Manager always ready to serve.. */
+	public function start(handler:(event:Dynamic, context:LambdaContext) -> Dynamic) {
+		while (true) {/* this is a must for Lambda runtime, keep the Manager always ready to serve.. */
 			var requestId:String = "";
 
-			fetch('${runtimeBase}/invocation/next').all()
-				.handle(function(o) switch o {
-					case Success(res): {
+			fetch('${runtimeBase}/invocation/next').all().handle(function(o) switch o {
+				case Success(res):
+					{
 						requestId = res.header.get("lambda-runtime-aws-request-id")[0];
 
 						var event = Json.parse(res.body.toString());
@@ -46,10 +47,10 @@ class Lambda {
 							logGroupName: Sys.getEnv("AWS_LAMBDA_LOG_GROUP_NAME"),
 							logStreamName: Sys.getEnv("AWS_LAMBDA_LOG_STREAM_NAME"),
 							awsRequestId: requestId,
-							memoryLimitInMb: memorySize, 
+							memoryLimitInMb: memorySize,
 							involkedFunctionArn: functionArn,
 							deadline: Date.fromTime(deadlineMs),
-							identity: identityRaw == null ? null : Json.parse(identityRaw), 
+							identity: identityRaw == null ? null : Json.parse(identityRaw),
 							clientContext: clientContextRaw == null ? null : Json.parse(clientContextRaw),
 						}
 
@@ -65,17 +66,18 @@ class Lambda {
 
 						http.request(true);
 					}
-					case Failure(e): {
+				case Failure(e):
+					{
 						var http = new haxe.Http('${runtimeBase}/invocation/${requestId}/error');
 
 						http.setHeader("Content-Type", "application/json");
 						http.setPostData(Json.stringify({
 							errorType: "WIP",
-							errorMessage: e.toString(), 
+							errorMessage: e.toString(),
 						}));
 						http.request(true);
 					};
-				});
+			});
 		}
 	}
 
@@ -85,6 +87,5 @@ class Lambda {
 
 		memorySize = memSize == null ? 256 : Std.parseInt(memSize);
 		runtimeBase = 'http://${runtimeApi}/2018-06-01/runtime';
-	}	
+	}
 }
-

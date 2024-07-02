@@ -1,45 +1,56 @@
 package neon.core;
 
-import neon.core.Builder.VirtualNode;
-import neon.core.Builder.createElement;
+import neon.core.Common.VirtualNode;
+import neon.core.Common.createElement;
 
-function View(props:Dynamic, children:Dynamic):VirtualNode {
+function View(props:Dynamic, ?children:Dynamic):VirtualNode {
 	return createElement("div", props, children);
 }
 
-function A(props:Dynamic, children:Dynamic):VirtualNode {
+function Anchor(props:Dynamic, ?children:Dynamic):VirtualNode {
 	return createElement("a", props, children);
 }
 
-function P(props:Dynamic, children:Dynamic):VirtualNode {
+function Image(props:Dynamic, ?children:Dynamic):VirtualNode {
+	return createElement("image", props, children);
+}
+
+function Svg(props:Dynamic, ?children:Dynamic):VirtualNode {
+	return createElement("svg", props, children);
+}
+
+function Path(props:Dynamic, ?children:Dynamic):VirtualNode {
+	return createElement("path", props, children);
+}
+
+function P(props:Dynamic, ?children:Dynamic):VirtualNode {
 	return createElement("p", props, children);
 }
 
-function Span(props:Dynamic, children:Dynamic):VirtualNode {
+function Span(props:Dynamic, ?children:Dynamic):VirtualNode {
 	return createElement("span", props, children);
 }
 
-function H1(props:Dynamic, children:Dynamic):VirtualNode {
+function H1(props:Dynamic, ?children:Dynamic):VirtualNode {
 	return createElement("h1", props, children);
 }
 
-function H2(props:Dynamic, children:Dynamic):VirtualNode {
+function H2(props:Dynamic, ?children:Dynamic):VirtualNode {
 	return createElement("h2", props, children);
 }
 
-function H3(props:Dynamic, children:Dynamic):VirtualNode {
+function H3(props:Dynamic, ?children:Dynamic):VirtualNode {
 	return createElement("h3", props, children);
 }
 
-function H4(props:Dynamic, children:Dynamic):VirtualNode {
+function H4(props:Dynamic, ?children:Dynamic):VirtualNode {
 	return createElement("h4", props, children);
 }
 
-function H5(props:Dynamic, children:Dynamic):VirtualNode {
+function H5(props:Dynamic, ?children:Dynamic):VirtualNode {
 	return createElement("h5", props, children);
 }
 
-function H6(props:Dynamic, children:Dynamic):VirtualNode {
+function H6(props:Dynamic, ?children:Dynamic):VirtualNode {
 	return createElement("h6", props, children);
 }
-

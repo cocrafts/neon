@@ -3,7 +3,7 @@ package neon.web;
 import neon.parser.HtmlNodeElement;
 import neon.parser.HtmlNodeText;
 import neon.parser.HtmlDocument;
-import neon.core.Builder.VirtualNode;
+import neon.core.Common.VirtualNode;
 import neon.web.Helper;
 
 @:build(HaxeCBridge.expose())

@@ -6,13 +6,20 @@ function camelToKebabCase(str:String):String {
 }
 
 function parseCssValue(style:Dynamic, key:String):String {
-	switch key {
-	case "fontSize", "width", "height", "top", "left", "right", "bottom",
-		 "margin", "marginTop", "marginRight", "marginBottom", "marginLeft",
-		 "padding", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft",
-		 "borderWidth", "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth":
-		return '${Reflect.field(style, key)}px';
-	default:
-		return Reflect.field(style, key);
+	var field = Reflect.field(style, key);
+
+	switch (key) {
+		case "fontSize", "width", "height", "top", "left", "right", "bottom", "margin", "maxWidth", "maxHeight", "marginTop", "marginRight", "marginBottom",
+			"marginLeft", "padding", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "borderWidth", "borderTopWidth", "borderRightWidth",
+			"borderBottomWidth", "borderLeftWidth":
+			{
+				if (Std.isOfType(field, String)) {
+					return field;
+				} else {
+					return '${Std.parseInt(field)}px';
+				}
+			}
+		default:
+			return field;
 	}
 }
