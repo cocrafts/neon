@@ -15,14 +15,6 @@ function Image(props:Dynamic, ?children:Dynamic):VirtualNode {
 	return createElement("image", props, children);
 }
 
-function Svg(props:Dynamic, ?children:Dynamic):VirtualNode {
-	return createElement("svg", props, children);
-}
-
-function Path(props:Dynamic, ?children:Dynamic):VirtualNode {
-	return createElement("path", props, children);
-}
-
 function P(props:Dynamic, ?children:Dynamic):VirtualNode {
 	return createElement("p", props, children);
 }

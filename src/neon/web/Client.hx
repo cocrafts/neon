@@ -13,7 +13,8 @@ class NeonDom {
 
 	public static function createElement(tag:String) {
 		switch (tag) {
-			case "svg", "path":
+			case "svg", "path", "line", "circle", "rect", "polyline", "polygon", "ellipse", "g", "text", "tspan", "textPath", "defs", "image", "defs",
+				"marker", "mask", "pattern", "switch", "symbol", "use":
 				return document.createElementNS(nsUri, tag);
 			default:
 				return document.createElement(tag);
@@ -21,11 +22,10 @@ class NeonDom {
 	}
 
 	public static function setAttribute(el:js.html.Element, name:String, value:Dynamic) {
-		switch (el.tagName) {
-			case "svg", "path":
-				return el.setAttributeNS(null, name, value);
-			default:
-				return el.setAttribute(name, value);
+		if (StringTools.endsWith(el.namespaceURI, "svg")) {
+			el.setAttributeNS(null, name, value);
+		} else {
+			el.setAttribute(name, value);
 		}
 	}
 

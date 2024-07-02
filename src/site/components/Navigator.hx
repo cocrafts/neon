@@ -1,5 +1,6 @@
 package site.components;
 
+import site.components.Icons.BurgerIcon;
 import site.components.Icons.GithubIcon;
 import neon.core.Style.StyleSheet;
 import neon.core.Element;
@@ -8,8 +9,8 @@ function Navigator() {
 	return View({style: styles.container}, [
 		View({style: styles.contentContainer}, [
 			Anchor({style: styles.leftContainer, href: githubLink}, [GithubIcon({size: 26}), Span({style: styles.githubText}, "Github"),]),
-			View({style: styles.midContainer}, [Span({style: styles.brandingText}, "neon"),]),
-			View({style: styles.rightContainer}, "menu"),
+			View({style: styles.midContainer}, [Span({style: styles.brandingText}, "engine"),]),
+			View({style: styles.rightContainer}, [BurgerIcon({size: 16}),]),
 		]),
 	]);
 }
@@ -45,6 +46,7 @@ var styles = StyleSheet.create({
 	},
 	rightContainer: {
 		position: "absolute",
+		cursor: "pointer",
 		right: 18,
 	},
 	midContainer: {
