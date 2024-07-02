@@ -20,6 +20,7 @@ export const landing = ({ stack, app }: StackContext) => {
 
 	const site = new StaticSite(stack as never, 'landing-static', {
 		path: 'dist',
+		buildCommand: 'yarn build',
 		customDomain: {
 			domainName,
 			hostedZone,
