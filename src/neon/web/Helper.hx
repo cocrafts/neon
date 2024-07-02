@@ -1,5 +1,7 @@
 package neon.web;
 
+import neon.core.Style.StyleSheet;
+
 function camelToKebabCase(str:String):String {
 	var reg = new EReg("[A-Z]", "g");
 	return reg.map(str, (match) -> "-" + match.matched(0).toLowerCase());
@@ -22,4 +24,19 @@ function parseCssValue(style:Dynamic, key:String):String {
 		default:
 			return field;
 	}
+}
+
+function generateCSS():String {
+	var css:String = "";
+
+	for (key in StyleSheet.styles.keys()) {
+		var style:Dynamic = StyleSheet.styles.get(key);
+		css += ".neon-" + key + " {";
+		for (field in Reflect.fields(style)) {
+			css += camelToKebabCase(field) + ": " + parseCssValue(style, field) + "; ";
+		}
+		css += "}\n";
+	}
+
+	return css;
 }

@@ -44,8 +44,28 @@ typedef Style = {
 typedef StyleMap = Map<String, Style>;
 
 class StyleSheet {
+	public static var styles:StringMap<Dynamic> = new StringMap();
+	static var uniqueIdCounter:Int = 0;
+
+	public static function generateUniqueId():String {
+		return Std.string(uniqueIdCounter++);
+	}
+
+	public static function cacheStyleMap(map:Dynamic):Dynamic {
+		var idMap:Dynamic = {};
+
+		for (key in Reflect.fields(map)) {
+			var uniqueId = generateUniqueId();
+			var style = Reflect.field(map, key);
+
+			Reflect.setField(idMap, key, uniqueId);
+			styles.set(uniqueId, style);
+		}
+
+		return idMap;
+	}
+
 	public static macro function create(e:Expr):Expr {
-		var structFields = [];
 		var fields = Context.typeExpr(e);
 
 		switch e.expr {
@@ -78,7 +98,7 @@ class StyleSheet {
 									registerField("marginTop", fieldExpr);
 									registerField("marginBottom", fieldExpr);
 								} else {
-									styleMap.set(fieldName, {field: fieldName, expr: fieldExpr, pos: Context.currentPos()});
+									registerField(fieldName, fieldExpr);
 								}
 							}
 						default:
@@ -94,7 +114,11 @@ class StyleSheet {
 				return Context.error("Object type expected", e.pos);
 		}
 
-		return e;
+		return macro {
+			var style = ${e};
+			var idMap = neon.core.Style.StyleSheet.cacheStyleMap(style);
+			idMap;
+		};
 	}
 
 	static function stringMapToArray(map:StringMap<Dynamic>):Array<Dynamic> {

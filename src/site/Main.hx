@@ -9,7 +9,7 @@ import site.components.Branding;
 class Main {
 	static function main() {
 		var el = View({id: "app", className: "container",}, [
-			Branding({main: "neon", sub: "Build cross-platform Apps with native runtime!"}),
+			Branding({main: "neon", sub: "Build cross-platform App in native runtime!"}),
 			Navigator(),
 		]);
 

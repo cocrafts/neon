@@ -7,14 +7,14 @@ import neon.web.Helper;
 
 class NeonDom {
 	public static function render(node:VirtualNode, container:Dynamic):Void {
-		var el = makeElement(node);
-		container.appendChild(el);
+		injectStyleElement();
+		container.appendChild(makeElement(node));
 	}
 
 	public static function createElement(tag:String) {
 		switch (tag) {
-			case "svg", "path", "line", "circle", "rect", "polyline", "polygon", "ellipse", "g", "text", "tspan", "textPath", "defs", "image", "defs",
-				"marker", "mask", "pattern", "switch", "symbol", "use":
+			case "svg", "path", "line", "circle", "rect", "polyline", "polygon", "ellipse", "g", "text", "tspan", "textPath", "defs", "image", "marker",
+				"mask", "pattern", "switch", "symbol", "use":
 				return document.createElementNS(nsUri, tag);
 			default:
 				return document.createElement(tag);
@@ -36,13 +36,17 @@ class NeonDom {
 			var value = Reflect.field(node.props, prop);
 
 			if (prop == "style") {
-				for (attribute in Reflect.fields(value)) {
-					var styleKey = camelToKebabCase(attribute);
-					var styleValue = parseCssValue(value, attribute);
-					el.style.setProperty(styleKey, styleValue);
+				if (Std.isOfType(value, String)) {
+					el.classList.add('neon-${value}');
+				} else {
+					for (attribute in Reflect.fields(value)) {
+						var styleKey = camelToKebabCase(attribute);
+						var styleValue = parseCssValue(value, attribute);
+						el.style.setProperty(styleKey, styleValue);
+					}
 				}
 			} else if (Reflect.isFunction(value)) {
-				var callbackId = CallbackManager.registerCallback(value);
+				var callbackId = CallbackManager.registerCallback(cast value);
 				el.addEventListener(prop, (event) -> CallbackManager.invokeCallback(callbackId, event));
 			} else {
 				setAttribute(el, prop, value);
@@ -58,6 +62,15 @@ class NeonDom {
 		}
 
 		return el;
+	}
+
+	static function injectStyleElement():Void {
+		var cssString = generateCSS();
+		var styleElement = document.createElement("style");
+
+		styleElement.setAttribute("type", "text/css");
+		styleElement.innerHTML = cssString;
+		document.head.appendChild(styleElement);
 	}
 }
 
