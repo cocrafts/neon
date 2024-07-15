@@ -1,17 +1,21 @@
 package site.components;
 
+import neon.state.Signal;
 import neon.core.Common.VirtualNode;
 import neon.core.Style.StyleSheet;
 import neon.core.Element;
 
-function Branding(props:{main:String, sub:String}):VirtualNode {
+function Branding(props:{main:String, sub:String, count:Signal<Int>}):VirtualNode {
+	trace('branding re-rendering');
+
 	return View({
 		style: styles.brandingContainer,
 		click: function() {
+			props.count.set(props.count.get() + 1);
 			// js.Browser.window.open(githubLink);
 		},
 	}, [
-		Span({style: styles.mainText}, props.main),
+		Span({style: styles.mainText}, '${props.main} ${props.count.get()}'),
 		Span({style: styles.subText}, props.sub),
 	]);
 }
@@ -22,6 +26,7 @@ var styles = StyleSheet.create({
 		flexDirection: "column",
 		alignItems: "center",
 		marginTop: 64,
+		userSelect: "none",
 	},
 	mainText: {
 		color: "#ffd9e2",

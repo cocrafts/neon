@@ -1,5 +1,11 @@
 package neon.web;
 
+import neon.core.Common.NodeCreator;
+import js.html.Element;
+import neon.state.Effect;
+import js.html.svg.MaskElement;
+import neon.core.Common.FunctionComponent;
+import haxe.Constraints.Function;
 import js.Browser.document;
 import neon.core.Event.CallbackManager;
 import neon.core.Common.VirtualNode;
@@ -29,31 +35,49 @@ class NeonDom {
 		}
 	}
 
-	public static function makeElement(node:VirtualNode):Dynamic {
-		var el = createElement(node.tag);
+	public static function makeElement(node:VirtualNode):Element {
+		var el:Element;
 
-		for (prop in Reflect.fields(node.props)) {
-			var value = Reflect.field(node.props, prop);
+		if (Std.isOfType(node.tag, String)) {
+			el = createElement(node.tag);
 
-			if (prop == "style") {
-				if (Std.isOfType(value, String)) {
-					el.classList.add('neon-${value}');
-				} else {
-					for (attribute in Reflect.fields(value)) {
-						var styleKey = camelToKebabCase(attribute);
-						var styleValue = parseCssValue(value, attribute);
-						el.style.setProperty(styleKey, styleValue);
+			for (prop in Reflect.fields(node.props)) {
+				var value = Reflect.field(node.props, prop);
+
+				if (prop == "style") {
+					if (Std.isOfType(value, String)) {
+						el.classList.add('neon-${value}');
+					} else {
+						for (attribute in Reflect.fields(value)) {
+							var styleKey = camelToKebabCase(attribute);
+							var styleValue = parseCssValue(value, attribute);
+							el.style.setProperty(styleKey, styleValue);
+						}
 					}
+				} else if (Reflect.isFunction(value)) {
+					var callbackId = CallbackManager.registerCallback(cast value);
+					el.addEventListener(prop, (event) -> CallbackManager.invokeCallback(callbackId, event));
+				} else if (prop != "children") {
+					setAttribute(el, prop, value);
 				}
-			} else if (Reflect.isFunction(value)) {
-				var callbackId = CallbackManager.registerCallback(cast value);
-				el.addEventListener(prop, (event) -> CallbackManager.invokeCallback(callbackId, event));
-			} else {
-				setAttribute(el, prop, value);
 			}
+		} else {
+			node.effect = new Effect(function() {
+				var refNode:Element = node.ref;
+				var nodeCreator:FunctionComponent = node.tag;
+
+				el = makeElement(nodeCreator(node.props));
+				if (refNode?.parentNode != null) {
+					refNode.parentNode.replaceChild(el, refNode);
+				}
+
+				node.ref = el;
+			});
 		}
 
-		for (child in node.children) {
+		var children:Array<Dynamic> = Reflect.field(node.props, "children");
+
+		for (child in children) {
 			if (Std.is(child, String)) {
 				el.appendChild(document.createTextNode(cast child));
 			} else {

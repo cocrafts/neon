@@ -5,11 +5,11 @@ import site.components.Icons.GithubIcon;
 import neon.core.Style.StyleSheet;
 import neon.core.Element;
 
-function Navigator() {
+function Navigator(props:Dynamic) {
 	return View({style: styles.container}, [
 		View({style: styles.contentContainer}, [
 			Anchor({style: styles.leftContainer, href: githubLink}, [GithubIcon({size: 26}), Span({style: styles.githubText}, "Github"),]),
-			View({style: styles.midContainer}, [Span({style: styles.brandingText}, "engine"),]),
+			View({style: styles.midContainer}, [Span({}, "engine"),]),
 			View({style: styles.rightContainer}, [BurgerIcon({size: 16}),]),
 		]),
 	]);
@@ -53,9 +53,6 @@ var styles = StyleSheet.create({
 		display: "flex",
 		flex: 1,
 		justifyContent: "center",
-	},
-	brandingText: {
-		fontWeight: 600,
 	},
 });
 
