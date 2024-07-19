@@ -1,13 +1,19 @@
 package site;
 
+import haxe.Timer;
+import js.Browser.document;
+import haxe.Constraints.Function;
 import neon.core.Style.StyleSheet;
-import neon.core.Common.createElement;
+import neon.core.Common;
+// import neon.core.Element;
 import neon.core.State;
 import neon.platform.Renderer;
-import js.Browser.document;
-import haxe.Timer;
+
+// import site.components.Branding;
+// import site.components.Navigator;
 
 var count = new Signal(0);
+var step = new Signal(0);
 
 class Main {
 	static function setInterval(callback:Void->Void, interval:Int):Timer {
@@ -17,54 +23,52 @@ class Main {
 	}
 
 	static function main() {
-		// var el = View({id: "app", className: "container",}, [
-		// 	Branding({main: "neon", sub: "Build cross-platform App in native runtime!", count: count}),
-		// 	Navigator({count: count}),
-		// ]);
-		// js.Browser.console.log(App({name: "Cloud", count: count}), App, '<--');
-
 		setInterval(function() {
 			count.set(count.get() + 1);
-		}, 100);
+			step.set(step.get() + 5);
+		}, 1000);
 
-		var val = count.get();
-		var headingEl = createElement("h1", {}, ["I'm a heading!!"]);
-		var el = createElement("div", {style: styles.container}, [
-			"hello world!",
-			headingEl,
-			createElement("span", {}, ["I'm a span, "]),
-			createElement("a", {}, ["and here is anchor!"]),
-			createElement("span", {}, [" counter: ", count.get()]),
-			" ",
-			10 > 8,
-			" ",
-			count.get() > 100 ? "BIG" : "SMALL",
-			" ",
-			{
-				message: "object is supported!"
-			},
-			" ",
-			val,
-		]);
-		// var el = createElement("div", {}, ["hello", " world?", heading, span]);
-		// var el = createElement("div", {}, [App({name: "Cloud", count: count})]);
-		// var el = createElement(App, {});
-
-		universalRender(el, document.body);
+		universalRender(App({name: "world", count: count, step: step}), document.body);
 	}
+}
+
+typedef Props = {
+	var name:String;
+	var count:Signal<Int>;
+	var step:Signal<Int>;
+};
+
+function App(props:Props):Function {
+	var obj = {message: "object also accepted!!"};
+
+	return createElement("h1", {}, [
+		"hello ",
+		props.count.get(),
+		" ",
+		false,
+		" ",
+		obj,
+		Header({name: props.name, count: props.step}),
+	]);
+};
+
+function Header(props:{name:String, count:Signal<Int>}):Function {
+	var elementProps = {style: styles.heading};
+
+	return createElement("h2", elementProps, ["gretting ", props.name, " ", count.get(), "! "]);
 }
 
 var styles = StyleSheet.create({
 	container: {
-		color: "#dedede",
+		color: "#DEDEDE",
 		paddingHorizontal: 12,
 	},
+	heading: {
+		color: "#32c55a",
+	},
+	other: {
+		margin: 0,
+	},
 });
-
-// var App = createComponent(function(props:{name:String, count:Signal<Int>}):Dynamic {
-// 	var obj = {message: "object also accepted!!"};
-// 	// return createElement("h1", {});
-// 	return createElement("h1", {}, ["hello ", count.get(), " ", false, " ", obj]);
-// });
 
 var githubLink = "https://github.com/cocrafts/neon";

@@ -9,3 +9,4 @@ var universalInsert = insert;
 var universalMakeElement = makeElement;
 var universalStyle = style;
 var universalProp = prop;
+var universalRuntimeProps = runtimeProps;

@@ -66,6 +66,14 @@ function style(value:Dynamic, el:Element):Void {
 	}
 }
 
+function runtimeProps(props:Dynamic, el:Element):Void {
+	for (field in Reflect.fields(props)) {
+		if (field == "style") {
+			style(Reflect.field(props, "style"), el);
+		}
+	}
+}
+
 function prop(prop:String, value:Dynamic, el:Element):Void {}
 
 function injectStyleElement():Void {

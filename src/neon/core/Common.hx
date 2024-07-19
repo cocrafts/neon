@@ -1,5 +1,6 @@
 package neon.core;
 
+import haxe.macro.Type.TVar;
 import haxe.macro.ExprTools;
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -10,6 +11,11 @@ typedef FC<T> = (props:T) -> VirtualNode;
 typedef FunctionComponent = (props:Dynamic) -> VirtualNode;
 typedef NodeCreator = EitherType<String, FunctionComponent>;
 
+typedef MacroError = {
+	var message:String;
+	var pos:Position;
+};
+
 typedef VirtualNode = {
 	var tag:NodeCreator;
 	var props:Dynamic;
@@ -18,95 +24,167 @@ typedef VirtualNode = {
 	var ?effect:Effect;
 }
 
+function transformProps(props:Expr, blocks:Array<Expr>, localTVars:Map<String, TVar>):MacroError {
+	switch (props.expr) {
+		case EObjectDecl(fields):
+			for (prop in fields) {
+				if (prop.field == "style") {
+					switch (prop.expr.expr) {
+						case EField(e, _, _):
+							switch (e.expr) {
+								case EConst(CIdent(_)):
+									blocks.push(macro neon.platform.Renderer.universalStyle(${prop.expr}, el));
+								default:
+							}
+						default:
+							return {message: "this type of style is not supported", pos: props.pos};
+					}
+				}
+			}
+		case EConst(CIdent(ident)): /* received prop from external declaration source */
+			blocks.push(macro neon.platform.Renderer.universalRuntimeProps($i{ident}, el));
+		case EBlock(_): // ignore empty object {}
+		default:
+			trace(props);
+			return {message: "props must be object", pos: props.pos};
+	}
+
+	return null;
+}
+
+function transformChildren(children:Expr, blocks:Array<Expr>, localTVars:Map<String, TVar>):MacroError {
+	switch (children.expr) {
+		case EArrayDecl(items):
+			for (item in items) {
+				switch (item.expr) {
+					case ECall(f, args):
+						blocks.push(macro neon.platform.Renderer.universalInsert(function() {
+							return ${f}($a{args});
+						}, el, null));
+					case EConst(CString(_)):
+						blocks.push(macro neon.platform.Renderer.universalInsert($e{item}, el, null));
+					case EConst(CIdent("false")), EConst(CIdent("true")):
+						blocks.push(macro neon.platform.Renderer.universalInsert(false, el, null));
+					case EConst(CIdent(id)):
+						{
+							var idInfo = localTVars.get(id);
+							switch (idInfo?.t) {
+								case TFun([], TInst(_, [])): /* highly chance this is a function component */
+									blocks.push(macro neon.platform.Renderer.universalInsert($i{id}(), el, null));
+								default:
+									blocks.push(macro neon.platform.Renderer.universalInsert($i{id}, el, null));
+							}
+						}
+					case EFunction(_, _):
+						blocks.push(macro neon.platform.Renderer.universalInsert(($e{item})(), el, null));
+					case EObjectDecl(_), EField(_, _, _):
+						blocks.push(macro neon.platform.Renderer.universalInsert($e{item}, el, null));
+					case ETernary(_, _, _), EBinop(_, _, _):
+						blocks.push(macro neon.platform.Renderer.universalInsert(function() {
+							return $e{item};
+						}, el, null));
+					default:
+						trace(item);
+						return {message: 'un-handled children type ${item.expr.getName()}', pos: item.pos};
+				}
+			}
+		default:
+	}
+
+	return null;
+}
+
+function transformElement(tag:Expr, props:Expr, children:Expr, localTVars:Map<String, TVar>):EitherType<Expr, MacroError> {
+	var blocks:Array<Expr> = [];
+
+	var propError = transformProps(props, blocks, localTVars);
+	if (propError != null) {
+		return propError;
+	}
+
+	var childrenError = transformChildren(children, blocks, localTVars);
+	if (childrenError != null) {
+		return childrenError;
+	}
+
+	blocks.push(macro return el);
+
+	switch (tag.expr) {
+		case EConst(CString(elementTag)):
+			return macro function() {
+				var el = neon.platform.Renderer.universalMakeElement($i{elementTag});
+				$b{blocks};
+			}
+		default:
+			return {message: "invalid tag, should be string or function", pos: tag.pos};
+	}
+}
+
 macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
+	var localTVars = Context.getLocalTVars();
+
 	function processCreateElement(tag:Expr, props:Expr, children:Expr):Expr {
 		var blocks:Array<Expr> = [];
 		var localTVars = Context.getLocalTVars();
 
-		switch (props.expr) {
-			case EObjectDecl(fields):
-				for (prop in fields) {
-					if (prop.field == "style") {
-						switch (prop.expr.expr) {
-							case EField(e, f, k):
-								switch (e.expr) {
-									case EConst(CIdent(field)):
-										blocks.push(macro neon.platform.Renderer.universalStyle(${prop.expr}, el));
-										trace(localTVars);
-										trace(field);
-									default:
-								}
-							default:
-								Context.error("this type of style is not supported", props.pos);
-						}
-					}
-				}
-			case EBlock(blocks): // ignore empty object {}
-			default:
-				Context.error("props must be object", props.pos);
+		var propError = transformProps(props, blocks, localTVars);
+		if (propError != null) {
+			Context.error(propError.message, propError.pos);
 		}
 
-		if (children?.expr != null) {
-			switch (children.expr) {
-				case EArrayDecl(items):
-					for (item in items) {
-						switch (item.expr) {
-							case EConst(CString(value)):
-								blocks.push(macro neon.platform.Renderer.universalInsert($v{value}, el, null));
-							case ECall(f, args):
-								blocks.push(macro neon.platform.Renderer.universalInsert(function() {
-									${f}($a{args});
-									return ${f}($a{args});
-								}, el, null));
-							case EConst(CIdent(id)):
-								var idInfo = localTVars.get(id);
-
-								switch (idInfo.t) {
-									case TFun([], TInst(_, [])): /* highly chance this is a function component */
-										blocks.push(macro neon.platform.Renderer.universalInsert($i{id}(), el, null));
-									case TAbstract(_, []): /* primitive like Int, Bool... */
-										blocks.push(macro neon.platform.Renderer.universalInsert($i{id}, el, null));
-									case TInst(_, []): /* String */
-										blocks.push(macro neon.platform.Renderer.universalInsert($i{id}, el, null));
-									default:
-										Context.error('un-handled variable type', item.pos);
-								}
-
-							case EFunction(kind, f):
-								blocks.push(macro neon.platform.Renderer.universalInsert(($e{item})(), el, null));
-							case EObjectDecl(_):
-								blocks.push(macro neon.platform.Renderer.universalInsert($e{item}, el, null));
-							case ETernary(_econd, _eif, _eelse):
-								blocks.push(macro neon.platform.Renderer.universalInsert(function() {
-									return $e{item};
-								}, el, null));
-							case EBinop(_op, _e1, _e2):
-								blocks.push(macro neon.platform.Renderer.universalInsert(function() {
-									return $e{item};
-								}, el, null));
-							default:
-								Context.error('un-handled children type ${item.expr.getName()}', item.pos);
-						}
-					}
-				default:
-			}
+		var childrenError = transformChildren(children, blocks, localTVars);
+		if (childrenError != null) {
+			Context.error(childrenError.message, childrenError.pos);
 		}
 
 		blocks.push(macro return el);
 
 		switch (tag.expr) {
 			case EConst(CString(elementTag)):
+				return macro function() {
+					var el = neon.platform.Renderer.universalMakeElement($v{elementTag});
+					$b{blocks};
+				}
+			case EFunction(FAnonymous, f):
 				{
-					return macro function() {
-						var el = neon.platform.Renderer.universalMakeElement($v{elementTag});
-						$b{blocks};
+					var innerBlocks:Array<Expr> = [];
+
+					switch (f.expr.expr) {
+						case EBlock(items):
+							for (item in items) {
+								switch (item.expr) {
+									case EReturn(re):
+										switch (re.expr) {
+											case ECall(ce, args):
+												switch (ce.expr) {
+													case EConst(CIdent(functionName)):
+														if (functionName == "createElement") {
+															trace("valid!!!", args);
+														} else {
+															Context.error('invalid <FC> return: ${functionName}, must be createElement', ce.pos);
+														}
+													default:
+														Context.error("invalid <FC> return: must be createElement(..) call", ce.pos);
+												}
+												trace(ce);
+											default:
+												Context.error("invalid <FC> return: must be a call", re.pos);
+										}
+									default:
+										innerBlocks.push(item);
+								}
+								trace(item);
+							}
+						default:
+							trace(f.expr.expr);
 					}
+					trace(f);
+					return tag;
 				}
 			default:
+				trace(tag.expr);
 				return Context.error("invalid tag, should be string or function", tag.pos);
 		}
-
-		return tag;
 	}
 
 	var processedChildren:Dynamic = switch (children.expr) {
@@ -126,19 +204,33 @@ macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
 
 				return child;
 			});
+		case EConst(_):
+			[macro $e{children}];
 		default:
-			return children;
+			Context.error("invalid children", children.pos);
 	}
 
-	trace(ExprTools.toString(processCreateElement(tag, props, {
-		pos: children.pos,
-		expr: EArrayDecl(processedChildren),
-	})));
+	// trace(ExprTools.toString(processCreateElement(tag, props, {
+	// 	pos: children.pos,
+	// 	expr: EArrayDecl(processedChildren),
+	// })));
 
 	return processCreateElement(tag, props, {
 		pos: children.pos,
 		expr: EArrayDecl(processedChildren),
 	});
 }
+
+// macro function createComponent(func:Expr):Expr {
+// 	trace(func);
+// 	return func;
+// }
+// function createComponent<T>(func:T->Dynamic):Dynamic {
+// 	trace("how about this");
+// 	return function(props):Dynamic {
+// 		trace("Hmm");
+// 		return func(props);
+// 	}
+// }
 
 var nsUri = "http://www.w3.org/2000/svg";

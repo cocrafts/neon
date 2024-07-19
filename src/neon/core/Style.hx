@@ -1,8 +1,10 @@
 package neon.core;
 
+import haxe.macro.ExprTools;
 import haxe.ds.StringMap;
 import haxe.macro.Expr;
 import haxe.macro.Context;
+import neon.core.Helper;
 
 typedef Style = {
 	var ?width:Float;
@@ -47,77 +49,51 @@ class StyleSheet {
 	public static var styles:StringMap<Dynamic> = new StringMap();
 	static var uniqueIdCounter:Int = 0;
 
-	public static function generateUniqueId():String {
-		return Std.string(uniqueIdCounter++);
-	}
-
-	public static function cacheStyleMap(map:Dynamic):Dynamic {
-		var idMap:Dynamic = {};
-
-		for (key in Reflect.fields(map)) {
-			var uniqueId = generateUniqueId();
-			var style = Reflect.field(map, key);
-
-			Reflect.setField(idMap, key, uniqueId);
-			styles.set(uniqueId, style);
+	public static function registerStyle(map:Dynamic):Void {
+		for (id in Reflect.fields(map)) {
+			styles.set(id, Reflect.field(map, id));
 		}
-
-		return idMap;
 	}
 
 	public static macro function create(e:Expr):Expr {
-		var fields = Context.typeExpr(e);
+		var fields:Array<ObjectField> = [];
+		var fieldIds:Array<ObjectField> = [];
 
-		switch e.expr {
-			case EObjectDecl(declarations):
-				for (declaration in declarations) {
-					var styleName = declaration.field;
-					var styleExpr = declaration.expr;
-					var styleMap = new StringMap<Dynamic>();
+		switch (e.expr) {
+			case EObjectDecl(styles):
+				for (style in styles) {
+					switch (style.expr.expr) {
+						case EObjectDecl(attributes):
+							var styleId = generateUniqueId();
+							var styleFields:Array<ObjectField> = [];
 
-					function registerField(field:String, expr:Dynamic):Void {
-						styleMap.set(field, {field: field, expr: expr, pos: Context.currentPos()});
-					};
-
-					switch (styleExpr.expr) {
-						case EObjectDecl(styleDeclarations):
-							for (styleDeclaration in styleDeclarations) {
-								var fieldName = styleDeclaration.field;
-								var fieldExpr = styleDeclaration.expr;
-
-								if (fieldName == "paddingHorizontal") {
-									registerField("paddingLeft", fieldExpr);
-									registerField("paddingRight", fieldExpr);
-								} else if (fieldName == "paddingVertical") {
-									registerField("paddingTop", fieldExpr);
-									registerField("paddingBottom", fieldExpr);
-								} else if (fieldName == "marginHorizontal") {
-									registerField("marginLeft", fieldExpr);
-									registerField("marginRight", fieldExpr);
-								} else if (fieldName == "marginVertical") {
-									registerField("marginTop", fieldExpr);
-									registerField("marginBottom", fieldExpr);
-								} else {
-									registerField(fieldName, fieldExpr);
-								}
+							for (attribute in attributes) {
+								styleFields.push(attribute);
 							}
-						default:
-							Context.error("Expected an object literal for style properties", styleExpr.pos);
-					}
 
-					declaration.expr = {
-						pos: styleExpr.pos,
-						expr: EObjectDecl(cast stringMapToArray(styleMap)),
-					};
+							fieldIds.push({
+								field: style.field,
+								expr: macro $v{styleId},
+							});
+
+							fields.push({
+								field: styleId,
+								expr: {expr: EObjectDecl(styleFields), pos: style.expr.pos},
+							});
+						default:
+							Context.error("style definition not supported", style.expr.pos);
+					}
 				}
 			default:
-				return Context.error("Object type expected", e.pos);
+				Context.error("Object type expected", e.pos);
 		}
 
+		var styleIdExpr = {expr: EObjectDecl(fieldIds), pos: e.pos};
+		var styleObjectExpr = {expr: EObjectDecl(fields), pos: e.pos};
+
 		return macro {
-			var style = ${e};
-			var idMap = neon.core.Style.StyleSheet.cacheStyleMap(style);
-			idMap;
+			neon.core.Style.StyleSheet.registerStyle(${styleObjectExpr});
+			$e{styleIdExpr};
 		};
 	}
 
