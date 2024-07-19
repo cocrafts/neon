@@ -1,9 +1,11 @@
 package neon.platform;
 
 #if js
-import neon.platform.web.Renderer.insert as insertFunc;
-import neon.platform.web.Renderer.render as renderFunc;
+import neon.platform.web.Renderer;
 #end
 
-var insert = insertFunc;
-var render = renderFunc;
+var universalRender = render;
+var universalInsert = insert;
+var universalMakeElement = makeElement;
+var universalStyle = style;
+var universalProp = prop;

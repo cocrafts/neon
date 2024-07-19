@@ -11,6 +11,10 @@ function render(element:Dynamic, container:Dynamic):Void {
 	insert(element, container, null);
 }
 
+function makeElement(tag:String):Element {
+	return js.Browser.document.createElement(tag);
+}
+
 function insert(node:Dynamic, container:Element, position:Int):Int {
 	var currentPosition = null;
 
@@ -55,6 +59,14 @@ function upsert(element:Dynamic, container:Element, position:Int):Int {
 
 	return container.childNodes.length - 1;
 }
+
+function style(value:Dynamic, el:Element):Void {
+	if (Std.isOfType(value, String)) {
+		el.classList.add('neon-${value}');
+	}
+}
+
+function prop(prop:String, value:Dynamic, el:Element):Void {}
 
 function injectStyleElement():Void {
 	var cssString = generateCSS();

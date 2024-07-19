@@ -21,6 +21,30 @@ typedef VirtualNode = {
 macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
 	function processCreateElement(tag:Expr, props:Expr, children:Expr):Expr {
 		var blocks:Array<Expr> = [];
+		var localTVars = Context.getLocalTVars();
+
+		switch (props.expr) {
+			case EObjectDecl(fields):
+				for (prop in fields) {
+					if (prop.field == "style") {
+						switch (prop.expr.expr) {
+							case EField(e, f, k):
+								switch (e.expr) {
+									case EConst(CIdent(field)):
+										blocks.push(macro neon.platform.Renderer.universalStyle(${prop.expr}, el));
+										trace(localTVars);
+										trace(field);
+									default:
+								}
+							default:
+								Context.error("this type of style is not supported", props.pos);
+						}
+					}
+				}
+			case EBlock(blocks): // ignore empty object {}
+			default:
+				Context.error("props must be object", props.pos);
+		}
 
 		if (children?.expr != null) {
 			switch (children.expr) {
@@ -28,37 +52,36 @@ macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
 					for (item in items) {
 						switch (item.expr) {
 							case EConst(CString(value)):
-								blocks.push(macro neon.platform.Renderer.insert($v{value}, el, null));
+								blocks.push(macro neon.platform.Renderer.universalInsert($v{value}, el, null));
 							case ECall(f, args):
-								blocks.push(macro neon.platform.Renderer.insert(function() {
+								blocks.push(macro neon.platform.Renderer.universalInsert(function() {
 									${f}($a{args});
 									return ${f}($a{args});
 								}, el, null));
 							case EConst(CIdent(id)):
-								var localTVars = Context.getLocalTVars();
 								var idInfo = localTVars.get(id);
 
 								switch (idInfo.t) {
 									case TFun([], TInst(_, [])): /* highly chance this is a function component */
-										blocks.push(macro neon.platform.Renderer.insert($i{id}(), el, null));
+										blocks.push(macro neon.platform.Renderer.universalInsert($i{id}(), el, null));
 									case TAbstract(_, []): /* primitive like Int, Bool... */
-										blocks.push(macro neon.platform.Renderer.insert($i{id}, el, null));
+										blocks.push(macro neon.platform.Renderer.universalInsert($i{id}, el, null));
 									case TInst(_, []): /* String */
-										blocks.push(macro neon.platform.Renderer.insert($i{id}, el, null));
+										blocks.push(macro neon.platform.Renderer.universalInsert($i{id}, el, null));
 									default:
 										Context.error('un-handled variable type', item.pos);
 								}
 
 							case EFunction(kind, f):
-								blocks.push(macro neon.platform.Renderer.insert(($e{item})(), el, null));
+								blocks.push(macro neon.platform.Renderer.universalInsert(($e{item})(), el, null));
 							case EObjectDecl(_):
-								blocks.push(macro neon.platform.Renderer.insert($e{item}, el, null));
+								blocks.push(macro neon.platform.Renderer.universalInsert($e{item}, el, null));
 							case ETernary(_econd, _eif, _eelse):
-								blocks.push(macro neon.platform.Renderer.insert(function() {
+								blocks.push(macro neon.platform.Renderer.universalInsert(function() {
 									return $e{item};
 								}, el, null));
 							case EBinop(_op, _e1, _e2):
-								blocks.push(macro neon.platform.Renderer.insert(function() {
+								blocks.push(macro neon.platform.Renderer.universalInsert(function() {
 									return $e{item};
 								}, el, null));
 							default:
@@ -75,7 +98,7 @@ macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
 			case EConst(CString(elementTag)):
 				{
 					return macro function() {
-						var el = js.Browser.document.createElement($v{elementTag});
+						var el = neon.platform.Renderer.universalMakeElement($v{elementTag});
 						$b{blocks};
 					}
 				}
