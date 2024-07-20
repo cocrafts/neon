@@ -1,27 +1,36 @@
 package site.components;
 
-import neon.state.Signal;
-import neon.core.Common.VirtualNode;
+import neon.core.Common;
+import neon.core.State;
 import neon.core.Style.StyleSheet;
-import neon.core.Element;
 
-function Branding(props:{main:String, sub:String, count:Signal<Int>}):VirtualNode {
-	trace('branding re-rendering');
+typedef Props = {
+	var main:String;
+	var sub:String;
+	var count:Signal<Int>;
+};
 
-	return View({
+var Branding = createComponent(function(props:Props):Dynamic {
+	return createElement("div", {
 		style: styles.brandingContainer,
+		className: "extra",
 		click: function() {
-			props.count.set(props.count.get() + 1);
+			props.count.set(0);
 			// js.Browser.window.open(githubLink);
 		},
 	}, [
-		Span({style: styles.mainText}, '${props.main} ${props.count.get()}'),
-		Span({style: styles.subText}, props.sub),
+		createElement("span", {style: styles.mainText}, [
+			props.main,
+			createElement("span", {style: styles.separator}, ":"),
+			props.count.get()
+		]),
+		createElement("span", {style: styles.subText}, props.sub),
 	]);
-}
+});
 
 var styles = StyleSheet.create({
 	brandingContainer: {
+		cursor: "pointer",
 		display: "flex",
 		flexDirection: "column",
 		alignItems: "center",
@@ -39,5 +48,8 @@ var styles = StyleSheet.create({
 		fontSize: 16,
 		fontFamily: "Silkscreen",
 		textAlign: "center",
+	},
+	separator: {
+		fontSize: 120,
 	},
 });

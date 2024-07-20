@@ -1,5 +1,6 @@
 package neon.platform.web;
 
+import neon.core.Event.CallbackManager;
 import haxe.Json;
 import js.html.Element;
 import js.Browser.document;
@@ -74,7 +75,24 @@ function runtimeProps(props:Dynamic, el:Element):Void {
 	}
 }
 
-function prop(prop:String, value:Dynamic, el:Element):Void {}
+function setAttribute(el:js.html.Element, name:String, value:Dynamic) {
+	if (StringTools.endsWith(el.namespaceURI, "svg")) {
+		el.setAttributeNS(null, name, value);
+	} else {
+		el.setAttribute(name, value);
+	}
+}
+
+function prop(prop:String, value:Dynamic, el:Element):Void {
+	if (Reflect.isFunction(value)) {
+		var callbackId = CallbackManager.registerCallback(cast value);
+		el.addEventListener(prop, (event) -> CallbackManager.invokeCallback(callbackId, event));
+	} else if (prop == "class") {
+		el.classList.add(value);
+	} else {
+		setAttribute(el, prop, value);
+	}
+}
 
 function injectStyleElement():Void {
 	var cssString = generateCSS();

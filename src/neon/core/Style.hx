@@ -1,6 +1,5 @@
 package neon.core;
 
-import haxe.macro.ExprTools;
 import haxe.ds.StringMap;
 import haxe.macro.Expr;
 import haxe.macro.Context;
@@ -59,29 +58,36 @@ class StyleSheet {
 		var fields:Array<ObjectField> = [];
 		var fieldIds:Array<ObjectField> = [];
 
+		function injectStyle(name:String, styleFields:Array<ObjectField>, pos:Position) {
+			var styleId = generateUniqueId();
+
+			fieldIds.push({
+				field: name,
+				expr: macro $v{styleId},
+			});
+
+			fields.push({
+				field: styleId,
+				expr: {expr: EObjectDecl(styleFields), pos: pos},
+			});
+		}
+
 		switch (e.expr) {
 			case EObjectDecl(styles):
 				for (style in styles) {
 					switch (style.expr.expr) {
 						case EObjectDecl(attributes):
-							var styleId = generateUniqueId();
 							var styleFields:Array<ObjectField> = [];
-
 							for (attribute in attributes) {
 								styleFields.push(attribute);
 							}
 
-							fieldIds.push({
-								field: style.field,
-								expr: macro $v{styleId},
-							});
-
-							fields.push({
-								field: styleId,
-								expr: {expr: EObjectDecl(styleFields), pos: style.expr.pos},
-							});
+							injectStyle(style.field, styleFields, style.expr.pos);
+						case EBlock([]):
+							injectStyle(style.field, [], style.expr.pos);
 						default:
-							Context.error("style definition not supported", style.expr.pos);
+							trace(style);
+							Context.error("invalid style definition", style.expr.pos);
 					}
 				}
 			default:
