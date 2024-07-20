@@ -68,6 +68,10 @@ function transformProps(props:Expr, blocks:Array<Expr>, localTVars:Map<String, T
 }
 
 function ensureArray(children:Expr):Expr {
+	if (children == null) {
+		return macro [];
+	}
+
 	switch (children.expr) {
 		case EField(_):
 			return macro [$e{children}];
@@ -121,5 +125,3 @@ function transformChildren(maybeChildren:Expr, blocks:Array<Expr>, localTVars:Ma
 
 	return null;
 }
-
-var nsUri = "http://www.w3.org/2000/svg";

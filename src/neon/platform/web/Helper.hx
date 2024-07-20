@@ -40,3 +40,5 @@ function generateCSS():String {
 
 	return css;
 }
+
+var nsUri = "http://www.w3.org/2000/svg";

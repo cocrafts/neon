@@ -13,7 +13,13 @@ function render(element:Dynamic, container:Dynamic):Void {
 }
 
 function makeElement(tag:String):Element {
-	return js.Browser.document.createElement(tag);
+	switch (tag) {
+		case "svg", "path", "line", "circle", "rect", "polyline", "polygon", "ellipse", "g", "text", "tspan", "textPath", "defs", "image", "marker", "mask",
+			"pattern", "switch", "symbol", "use":
+			return js.Browser.document.createElementNS(nsUri, tag);
+		default:
+			return js.Browser.document.createElement(tag);
+	}
 }
 
 function insert(node:Dynamic, container:Element, position:Int):Int {
@@ -33,8 +39,12 @@ function insert(node:Dynamic, container:Element, position:Int):Int {
 		var textNode = document.createTextNode(node == true ? "true" : "false");
 		return upsert(textNode, container, position);
 	} else if (Reflect.isObject(node)) {
-		var textNode = document.createTextNode(Json.stringify(node));
-		return upsert(textNode, container, position);
+		if (Reflect.fields(node).length == 0) {
+			upsert(node, container, position); /* is SVG element */
+		} else {
+			var textNode = document.createTextNode(Json.stringify(node));
+			return upsert(textNode, container, position);
+		}
 	} else if (Reflect.isFunction(node)) {
 		new Effect(function() {
 			if (currentPosition == null) {
@@ -46,6 +56,14 @@ function insert(node:Dynamic, container:Element, position:Int):Int {
 	}
 
 	return position;
+}
+
+function setAttribute(el:js.html.Element, name:String, value:Dynamic) {
+	if (StringTools.endsWith(el.namespaceURI, "svg")) {
+		el.setAttributeNS(null, name, value);
+	} else {
+		el.setAttribute(name, value);
+	}
 }
 
 function upsert(element:Dynamic, container:Element, position:Int):Int {
@@ -72,14 +90,6 @@ function runtimeProps(props:Dynamic, el:Element):Void {
 		if (field == "style") {
 			style(Reflect.field(props, "style"), el);
 		}
-	}
-}
-
-function setAttribute(el:js.html.Element, name:String, value:Dynamic) {
-	if (StringTools.endsWith(el.namespaceURI, "svg")) {
-		el.setAttributeNS(null, name, value);
-	} else {
-		el.setAttribute(name, value);
 	}
 }
 

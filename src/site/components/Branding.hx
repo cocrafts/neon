@@ -4,13 +4,13 @@ import neon.core.Common;
 import neon.core.State;
 import neon.core.Style.StyleSheet;
 
-typedef Props = {
+typedef BrandingProps = {
 	var main:String;
 	var sub:String;
 	var count:Signal<Int>;
 };
 
-var Branding = createComponent(function(props:Props):Dynamic {
+var Branding = createComponent(function(props:BrandingProps):Dynamic {
 	return createElement("div", {
 		style: styles.brandingContainer,
 		className: "extra",

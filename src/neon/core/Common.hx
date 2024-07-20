@@ -38,10 +38,18 @@ macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
 								} else {
 									blocks.push(macro neon.platform.Renderer.universalProp($v{prop.field}, ${prop.expr}, el));
 								}
-							case EFunction(FAnonymous, f):
-								blocks.push(macro neon.platform.Renderer.universalProp($v{prop.field}, ${prop.expr}, el));
+							// case EConst(CInt(_, _)):
+							// 	blocks.push(macro neon.platform.Renderer.universalProp($v{prop.field}, ${prop.expr}, el));
+							// case EConst(CIdent(_)): /* Boolean */
+							// 	blocks.push(macro neon.platform.Renderer.universalProp($v{prop.field}, ${prop.expr}, el));
+							// case EField(_):
+							// 	blocks.push(macro neon.platform.Renderer.universalProp($v{prop.field}, ${prop.expr}, el));
+							// case EFunction(FAnonymous, f):
+							// 	blocks.push(macro neon.platform.Renderer.universalProp($v{prop.field}, ${prop.expr}, el));
 							default:
-								Context.error("this type of prop is not supported", props.pos);
+								blocks.push(macro neon.platform.Renderer.universalProp($v{prop.field}, ${prop.expr}, el));
+								// trace(prop, "<--");
+								// Context.error("this type of prop is not supported", props.pos);
 						}
 					}
 				}

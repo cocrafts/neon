@@ -6,6 +6,7 @@ import neon.core.Common;
 import neon.core.State;
 import neon.platform.Renderer;
 import site.components.Branding;
+import site.components.Navigator;
 
 var count = new Signal(0);
 
@@ -26,6 +27,7 @@ class Main {
 
 		var app = createElement("div", {}, [
 			Branding({main: "neon", sub: "build cross-platform app in native runtime!", count: count}),
+			Navigator({}),
 		]);
 
 		universalRender(app, document.body);

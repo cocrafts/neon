@@ -1,19 +1,24 @@
 package site.components;
 
-import site.components.Icons.BurgerIcon;
-import site.components.Icons.GithubIcon;
+import neon.core.Common;
+import site.components.Icons;
 import neon.core.Style.StyleSheet;
-import neon.core.Element;
 
-function Navigator(props:Dynamic) {
-	return View({style: styles.container}, [
-		View({style: styles.contentContainer}, [
-			Anchor({style: styles.leftContainer, href: githubLink}, [GithubIcon({size: 26}), Span({style: styles.githubText}, "Github"),]),
-			View({style: styles.midContainer}, [Span({}, "engine"),]),
-			View({style: styles.rightContainer}, [BurgerIcon({size: 16}),]),
+typedef NavigatorProps = {};
+
+var Navigator = createComponent(function(props:NavigatorProps) {
+	return createElement("div", {style: styles.container}, [
+		createElement("div", {style: styles.contentContainer}, [
+			createElement("a", {style: styles.leftContainer, href: githubLink},
+				[
+					GithubIcon({size: 26}),
+					createElement("span", {style: styles.githubText}, ["Github"]),
+				]),
+			createElement("div", {style: styles.midContainer}, [createElement("span", {}, ["engine"]),]),
+			createElement("div", {style: styles.rightContainer}, [BurgerIcon({size: 16, color: "#FFFFFF"}),]),
 		]),
 	]);
-}
+});
 
 var styles = StyleSheet.create({
 	container: {
