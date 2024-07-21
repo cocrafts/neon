@@ -26,19 +26,39 @@ function parseCssValue(style:Dynamic, key:String):String {
 	}
 }
 
+function generateMediaFragment(field:String, media:String, style:Dynamic):String {
+	var fragment:String = '${media} { .neon-${field} {';
+
+	for (field in Reflect.fields(style)) {
+		fragment += '${camelToKebabCase(field)}: ${parseCssValue(style, field)};';
+	}
+
+	fragment += "} }\n";
+
+	return fragment;
+}
+
 function generateCSS():String {
 	var css:String = "";
+	var mediaCss:String = "";
 
 	for (key in styleCache.keys()) {
 		var style:Dynamic = styleCache.get(key);
 		css += ".neon-" + key + " {";
+
 		for (field in Reflect.fields(style)) {
-			css += camelToKebabCase(field) + ": " + parseCssValue(style, field) + "; ";
+			if (StringTools.startsWith(field, "@media")) {
+				mediaCss += generateMediaFragment(key, field, Reflect.field(style, field));
+				trace(field, "is media field");
+			} else {
+				css += '${camelToKebabCase(field)}: ${parseCssValue(style, field)};';
+			}
 		}
+
 		css += "}\n";
 	}
 
-	return css;
+	return '${css}${mediaCss}';
 }
 
 var nsUri = "http://www.w3.org/2000/svg";

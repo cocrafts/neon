@@ -103,7 +103,7 @@ macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
 		expr: EArrayDecl(processedChildren),
 	});
 
-	trace(haxe.macro.ExprTools.toString(transformedElement));
+	// trace(haxe.macro.ExprTools.toString(transformedElement));
 	return transformedElement;
 }
 

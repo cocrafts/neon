@@ -19,11 +19,7 @@ var Branding = createComponent(function(props:BrandingProps):Dynamic {
 			// js.Browser.window.open(githubLink);
 		},
 	}, [
-		createElement("span", {style: styles.mainText}, [
-			props.main,
-			createElement("span", {style: styles.separator}, ":"),
-			props.count.get()
-		]),
+		createElement("span", {style: styles.mainText}, [props.main, createElement("span", {}, ":"), props.count.get()]),
 		createElement("span", {style: styles.subText}, props.sub),
 	]);
 });
@@ -42,14 +38,15 @@ var styles = createStyle({
 		fontFamily: "Silkscreen",
 		fontSize: 140,
 		textShadow: "0 0 0 transparent,0 0 10px #ff003c,0 0 20px rgba(255,0,60,.5),0 0 40px #ff003c,0 0 100px #ff003c,0 0 200px #ff003c,0 0 300px #ff003c,0 0 500px #ff003c,0 0 1000px #ff003c",
+		"@media (max-width: 600px)": {
+			fontSize: 80,
+			textShadow: "0 0 0 transparent,0 0 10px #759eff,0 0 20px rgba(142,185,255,.5),0 0 40px #759eff,0 0 100px #759eff,0 0 200px #759eff,0 0 300px #759eff,0 0 500px #759eff,0 0 1000px #759eff"
+		},
 	},
 	subText: {
 		color: "#ffc0c8",
 		fontSize: 16,
 		fontFamily: "Silkscreen",
 		textAlign: "center",
-	},
-	separator: {
-		fontSize: 120,
 	},
 });
