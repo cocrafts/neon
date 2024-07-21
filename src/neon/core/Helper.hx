@@ -3,7 +3,7 @@ package neon.core;
 import haxe.macro.Type.TVar;
 import haxe.macro.Expr;
 
-var chars:String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+private var chars:String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 typedef MacroError = {
 	var message:String;
@@ -33,7 +33,7 @@ function transformProps(props:Expr, blocks:Array<Expr>, localTVars:Map<String, T
 						case EField(e, _, _):
 							switch (e.expr) {
 								case EConst(CIdent(_)):
-									blocks.push(macro neon.platform.Renderer.universalStyle(${prop.expr}, el));
+									blocks.push(macro neon.platform.Renderer.style(${prop.expr}, el));
 								default:
 							}
 						default:
@@ -48,9 +48,9 @@ function transformProps(props:Expr, blocks:Array<Expr>, localTVars:Map<String, T
 								default:
 							}
 						case EFunction(FAnonymous, f):
-							var propCallExpr = macro neon.platform.Renderer.universalProp($i{prop.field}, ${f.expr}, el);
+							var propCallExpr = macro neon.platform.Renderer.prop($i{prop.field}, ${f.expr}, el);
 							trace(propCallExpr, haxe.macro.ExprTools.toString(propCallExpr), "<--");
-						// blocks.push(macro neon.platform.Renderer.universalProp(${prop.field}, ${f.expr}, el));
+						// blocks.push(macro neon.platform.Renderer.prop(${prop.field}, ${f.expr}, el));
 						default:
 							trace(prop);
 							return {message: "this type of prop is not supported", pos: props.pos};
@@ -58,7 +58,7 @@ function transformProps(props:Expr, blocks:Array<Expr>, localTVars:Map<String, T
 				}
 			}
 		case EConst(CIdent(ident)): /* received prop from external declaration source */
-			blocks.push(macro neon.platform.Renderer.universalRuntimeProps($i{ident}, el));
+			blocks.push(macro neon.platform.Renderer.runtimeProps($i{ident}, el));
 		case EBlock(_): // ignore empty object {}
 		default:
 			return {message: "props must be object", pos: props.pos};
@@ -88,32 +88,32 @@ function transformChildren(maybeChildren:Expr, blocks:Array<Expr>, localTVars:Ma
 			for (item in items) {
 				switch (item.expr) {
 					case ECall(f, args):
-						blocks.push(macro neon.platform.Renderer.universalInsert(function() {
+						blocks.push(macro neon.platform.Renderer.insert(function() {
 							return ${f}($a{args});
 						}, el, null));
 					case EConst(CString(_)):
-						blocks.push(macro neon.platform.Renderer.universalInsert($e{item}, el, null));
+						blocks.push(macro neon.platform.Renderer.insert($e{item}, el, null));
 					case EConst(CIdent("false")), EConst(CIdent("true")):
-						blocks.push(macro neon.platform.Renderer.universalInsert(false, el, null));
+						blocks.push(macro neon.platform.Renderer.insert(false, el, null));
 					case EConst(CIdent(id)):
 						{
 							var idInfo = localTVars.get(id);
 
 							switch (idInfo?.t) {
 								case TFun([], TInst(_, [])): /* highly chance this is a function component */
-									blocks.push(macro neon.platform.Renderer.universalInsert($i{id}(), el, null));
+									blocks.push(macro neon.platform.Renderer.insert($i{id}(), el, null));
 								case TAbstract(_, _): /* from createComponent's children arg */
-									blocks.push(macro neon.platform.Renderer.universalInsert($i{id}, el, null));
+									blocks.push(macro neon.platform.Renderer.insert($i{id}, el, null));
 								default:
-									blocks.push(macro neon.platform.Renderer.universalInsert($i{id}, el, null));
+									blocks.push(macro neon.platform.Renderer.insert($i{id}, el, null));
 							}
 						}
 					case EFunction(_, _):
-						blocks.push(macro neon.platform.Renderer.universalInsert(($e{item})(), el, null));
+						blocks.push(macro neon.platform.Renderer.insert(($e{item})(), el, null));
 					case EObjectDecl(_), EField(_, _, _):
-						blocks.push(macro neon.platform.Renderer.universalInsert($e{item}, el, null));
+						blocks.push(macro neon.platform.Renderer.insert($e{item}, el, null));
 					case ETernary(_, _, _), EBinop(_, _, _):
-						blocks.push(macro neon.platform.Renderer.universalInsert(function() {
+						blocks.push(macro neon.platform.Renderer.insert(function() {
 							return $e{item};
 						}, el, null));
 					default:

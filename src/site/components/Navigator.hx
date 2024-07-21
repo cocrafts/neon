@@ -1,8 +1,8 @@
 package site.components;
 
 import neon.core.Common;
+import neon.core.Style;
 import site.components.Icons;
-import neon.core.Style.StyleSheet;
 
 typedef NavigatorProps = {};
 
@@ -20,7 +20,7 @@ var Navigator = createComponent(function(props:NavigatorProps) {
 	]);
 });
 
-var styles = StyleSheet.create({
+var styles = createStyle({
 	container: {
 		position: "fixed",
 		top: 0,

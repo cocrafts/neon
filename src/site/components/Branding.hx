@@ -2,7 +2,7 @@ package site.components;
 
 import neon.core.Common;
 import neon.core.State;
-import neon.core.Style.StyleSheet;
+import neon.core.Style;
 
 typedef BrandingProps = {
 	var main:String;
@@ -28,7 +28,7 @@ var Branding = createComponent(function(props:BrandingProps):Dynamic {
 	]);
 });
 
-var styles = StyleSheet.create({
+var styles = createStyle({
 	brandingContainer: {
 		cursor: "pointer",
 		display: "flex",

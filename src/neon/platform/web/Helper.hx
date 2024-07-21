@@ -29,8 +29,8 @@ function parseCssValue(style:Dynamic, key:String):String {
 function generateCSS():String {
 	var css:String = "";
 
-	for (key in StyleSheet.styles.keys()) {
-		var style:Dynamic = StyleSheet.styles.get(key);
+	for (key in styleCache.keys()) {
+		var style:Dynamic = styleCache.get(key);
 		css += ".neon-" + key + " {";
 		for (field in Reflect.fields(style)) {
 			css += camelToKebabCase(field) + ": " + parseCssValue(style, field) + "; ";

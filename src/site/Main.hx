@@ -31,6 +31,7 @@ class Main {
 		]);
 
 		universalRender(app, document.body);
+		render(app, document.body);
 	}
 
 	static function setInterval(callback:Void->Void, interval:Int):Timer {
