@@ -2,18 +2,18 @@ package neon.core;
 
 class Signal<T> {
 	private var value:T;
-	private var dependents:Array<Dynamic->Void>;
+	private var effects:Array<Void->Void>;
 
-	public static var currentEffect:Effect = null;
+	public static var currentEffect:Void->Void = null;
 
 	public function new(initialValue:T) {
 		this.value = initialValue;
-		this.dependents = [];
+		this.effects = [];
 	}
 
 	public function get():T {
 		if (Signal.currentEffect != null) {
-			Signal.currentEffect.registerDependency(this);
+			this.effects.push(Signal.currentEffect);
 		}
 
 		return this.value;
@@ -26,51 +26,32 @@ class Signal<T> {
 		}
 	}
 
-	public function subscribe(callback:Dynamic->Void):() -> Void {
-		this.dependents.push(callback);
+	private function trigger():Void {
+		for (effect in effects) {
+			effect();
+		}
+	}
+
+	public function subscribe(callback:Void->Void):() -> Void {
+		this.effects.push(callback);
 
 		return function() {
-			this.dependents.remove(callback);
+			this.effects.remove(callback);
 		};
 	}
 
-	public function unsubscribe(callback:Dynamic->Void):Void {
-		this.dependents.remove(callback);
-	}
-
-	private function trigger():Void {
-		for (callback in dependents) {
-			callback(this.value);
-		}
+	public function unsubscribe(callback:Void->Void):Void {
+		this.effects.remove(callback);
 	}
 }
 
-class Effect {
-	private var effect:Void->Void;
-	private var dependencies:Array<Signal<Dynamic>>;
+function createSignal<T>(initialValue:T):Signal<T> {
+	return new Signal(initialValue);
+}
 
-	public function new(effect:Void->Void) {
-		this.effect = effect;
-		this.dependencies = [];
-		this.run();
-	}
-
-	public function run():Void {
-		this.cleanup();
-		Signal.currentEffect = this;
-		this.effect();
-		Signal.currentEffect = null;
-	}
-
-	public function registerDependency<T>(signal:Signal<T>):Void {
-		signal.subscribe(cast this.run);
-		this.dependencies.push(signal);
-	}
-
-	private function cleanup():Void {
-		for (dependency in this.dependencies) {
-			dependency.unsubscribe(cast this.run);
-		}
-		this.dependencies = [];
-	}
+function createEffect(effect:Void->Void):Void {
+	var previousEffect = Signal.currentEffect;
+	Signal.currentEffect = effect;
+	effect();
+	Signal.currentEffect = previousEffect;
 }

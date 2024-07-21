@@ -73,10 +73,10 @@ function ensureArray(children:Expr):Expr {
 	}
 
 	switch (children.expr) {
-		case EField(_):
-			return macro [$e{children}];
-		default:
+		case EArrayDecl(_):
 			return children;
+		default:
+			return macro [$e{children}];
 	}
 }
 
@@ -90,32 +90,32 @@ function transformChildren(maybeChildren:Expr, blocks:Array<Expr>, localTVars:Ma
 					case ECall(f, args):
 						blocks.push(macro neon.platform.Renderer.insert(function() {
 							return ${f}($a{args});
-						}, el, null));
+						}, el));
 					case EConst(CString(_)):
-						blocks.push(macro neon.platform.Renderer.insert($e{item}, el, null));
+						blocks.push(macro neon.platform.Renderer.insert($e{item}, el));
 					case EConst(CIdent("false")), EConst(CIdent("true")):
-						blocks.push(macro neon.platform.Renderer.insert(false, el, null));
+						blocks.push(macro neon.platform.Renderer.insert(false, el));
 					case EConst(CIdent(id)):
 						{
 							var idInfo = localTVars.get(id);
 
 							switch (idInfo?.t) {
 								case TFun([], TInst(_, [])): /* highly chance this is a function component */
-									blocks.push(macro neon.platform.Renderer.insert($i{id}(), el, null));
+									blocks.push(macro neon.platform.Renderer.insert($i{id}(), el));
 								case TAbstract(_, _): /* from createComponent's children arg */
-									blocks.push(macro neon.platform.Renderer.insert($i{id}, el, null));
+									blocks.push(macro neon.platform.Renderer.insert($i{id}, el));
 								default:
-									blocks.push(macro neon.platform.Renderer.insert($i{id}, el, null));
+									blocks.push(macro neon.platform.Renderer.insert($i{id}, el));
 							}
 						}
 					case EFunction(_, _):
-						blocks.push(macro neon.platform.Renderer.insert(($e{item})(), el, null));
+						blocks.push(macro neon.platform.Renderer.insert(($e{item})(), el));
 					case EObjectDecl(_), EField(_, _, _):
-						blocks.push(macro neon.platform.Renderer.insert($e{item}, el, null));
+						blocks.push(macro neon.platform.Renderer.insert($e{item}, el));
 					case ETernary(_, _, _), EBinop(_, _, _):
 						blocks.push(macro neon.platform.Renderer.insert(function() {
 							return $e{item};
-						}, el, null));
+						}, el));
 					default:
 						return {message: 'un-handled children type ${item.expr.getName()}', pos: item.pos};
 				}

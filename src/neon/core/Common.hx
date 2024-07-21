@@ -1,5 +1,6 @@
 package neon.core;
 
+import haxe.Timer;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import neon.core.Helper;
@@ -33,18 +34,19 @@ macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
 								} else {
 									blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
 								}
-							// case EConst(CInt(_, _)):
-							// 	blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
-							// case EConst(CIdent(_)): /* Boolean */
-							// 	blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
-							// case EField(_):
-							// 	blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
-							// case EFunction(FAnonymous, f):
-							// 	blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
-							default:
+							case EConst(CInt(_, _)):
 								blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
-								// trace(prop, "<--");
-								// Context.error("this type of prop is not supported", props.pos);
+							case EConst(CIdent(_)): /* Boolean */
+								blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
+							case EField(_):
+								blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
+							case EFunction(FAnonymous, f):
+								blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
+							case ECall(_): /* prop as function call, e.g: Math.round(a * b) */
+								blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
+							default:
+								// blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
+								Context.error("this type of prop is not supported", props.pos);
 						}
 					}
 				}
@@ -101,7 +103,7 @@ macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
 		expr: EArrayDecl(processedChildren),
 	});
 
-	// trace(haxe.macro.ExprTools.toString(transformedElement));
+	trace(haxe.macro.ExprTools.toString(transformedElement));
 	return transformedElement;
 }
 
@@ -162,4 +164,10 @@ macro function createComponent(func:Expr):Expr {
 
 	// trace(haxe.macro.ExprTools.trace(functionComponentExpr));
 	return functionComponentExpr;
+}
+
+function setInterval(callback:Void->Void, interval:Int):Timer {
+	var timer = new Timer(interval);
+	timer.run = callback;
+	return timer;
 }

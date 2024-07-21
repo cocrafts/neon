@@ -12,9 +12,9 @@ var Navigator = createComponent(function(props:NavigatorProps) {
 			createElement("a", {style: styles.leftContainer, href: githubLink},
 				[
 					GithubIcon({size: 26}),
-					createElement("span", {style: styles.githubText}, ["Github"]),
+					createElement("span", {style: styles.githubText}, "Github"),
 				]),
-			createElement("div", {style: styles.midContainer}, [createElement("span", {}, ["engine"]),]),
+			createElement("div", {style: styles.midContainer}, [createElement("span", {}, "engine"),]),
 			createElement("div", {style: styles.rightContainer}, [BurgerIcon({size: 16, color: "#FFFFFF"}),]),
 		]),
 	]);

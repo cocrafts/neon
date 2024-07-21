@@ -22,7 +22,7 @@ function makeElement(tag:String):Element {
 	}
 }
 
-function insert(node:Dynamic, container:Element, position:Int):Int {
+function insert(node:Dynamic, container:Element, ?position:Int):Int {
 	var currentPosition = null;
 
 	if (Std.isOfType(node, Array)) {
@@ -46,7 +46,7 @@ function insert(node:Dynamic, container:Element, position:Int):Int {
 			return upsert(textNode, container, position);
 		}
 	} else if (Reflect.isFunction(node)) {
-		new Effect(function() {
+		createEffect(function() {
 			if (currentPosition == null) {
 				currentPosition = insert(node(), container, position);
 			} else {
@@ -66,7 +66,7 @@ function setAttribute(el:js.html.Element, name:String, value:Dynamic) {
 	}
 }
 
-function upsert(element:Dynamic, container:Element, position:Int):Int {
+function upsert(element:Dynamic, container:Element, ?position:Int):Int {
 	if (position == null) {
 		container.appendChild(element);
 	} else {
