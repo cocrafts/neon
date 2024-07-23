@@ -56,8 +56,11 @@ macro function createStyle(e:Expr):Expr {
 	var styleIdExpr = {expr: EObjectDecl(fieldIds), pos: e.pos};
 	var styleObjectExpr = {expr: EObjectDecl(fields), pos: e.pos};
 
-	return macro {
+	var styleExpr = macro {
 		neon.core.Style.registerStyle(${styleObjectExpr});
 		$e{styleIdExpr};
 	};
+
+	// trace(haxe.macro.ExprTools.toString(styleExpr));
+	return styleExpr;
 }

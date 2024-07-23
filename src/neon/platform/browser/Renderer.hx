@@ -1,12 +1,12 @@
-package neon.platform.web;
+package neon.platform.browser;
 
 import neon.core.Event.CallbackManager;
 import haxe.Json;
 import js.html.Element;
 import js.Browser.document;
 import neon.core.State;
-import neon.core.Renderer.renderBundles;
-import neon.platform.web.Helper;
+import neon.core.Renderer;
+import neon.platform.browser.Helper;
 
 function render(container:Dynamic, element:Dynamic, ?props:Dynamic):Void {
 	injectStyleElement();
@@ -40,8 +40,11 @@ function insert(node:Dynamic, container:Element, ?position:Int):Int {
 		}
 	} else if (Std.isOfType(node, Element)) {
 		upsert(node, container, position);
-	} else if (Std.isOfType(node, String) || Std.isOfType(node, Int) || Std.isOfType(node, Float)) {
-		var textNode = document.createTextNode(cast node);
+	} else if (Std.isOfType(node, String)) {
+		var textNode = document.createTextNode(node);
+		return upsert(textNode, container, position);
+	} else if (Std.isOfType(node, Int) || Std.isOfType(node, Float)) {
+		var textNode = document.createTextNode(Std.string(node));
 		return upsert(textNode, container, position);
 	} else if (Std.isOfType(node, Bool)) {
 		var textNode = document.createTextNode(node == true ? "true" : "false");
@@ -87,16 +90,24 @@ function upsert(element:Dynamic, container:Element, ?position:Int):Int {
 	return container.childNodes.length - 1;
 }
 
-function runtimeProps(props:Dynamic, el:Element):Void {
-	for (field in Reflect.fields(props)) {
-		prop(field, Reflect.field(props, field), el);
+function setInlineStyle(el:Element, styles:Dynamic):Void {
+	var styleString = "";
+
+	for (attribute in Reflect.fields(styles)) {
+		var key = camelToKebabCase(attribute);
+		var value = parseCssValue(styles, attribute);
+		styleString += '${key}: ${value};';
 	}
+
+	el.setAttribute("style", styleString);
 }
 
 function prop(prop:String, value:Dynamic, el:Element):Void {
 	if (prop == "style") {
 		if (Std.isOfType(value, String)) {
 			el.classList.add('neon-${value}');
+		} else {
+			setInlineStyle(el, value);
 		}
 	} else if (Reflect.isFunction(value)) {
 		var callbackId = CallbackManager.registerCallback(cast value);
@@ -105,6 +116,12 @@ function prop(prop:String, value:Dynamic, el:Element):Void {
 		el.classList.add(value);
 	} else {
 		setAttribute(el, prop, value);
+	}
+}
+
+function runtimeProps(props:Dynamic, el:Element):Void {
+	for (field in Reflect.fields(props)) {
+		prop(field, Reflect.field(props, field), el);
 	}
 }
 

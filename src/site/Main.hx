@@ -1,7 +1,7 @@
 package site;
 
 import js.Browser.document;
-import neon.platform.web.Renderer;
+import neon.platform.browser.Renderer;
 import site.components.App;
 
 typedef AppProps = {

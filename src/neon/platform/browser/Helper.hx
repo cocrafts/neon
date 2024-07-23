@@ -1,4 +1,4 @@
-package neon.platform.web;
+package neon.platform.browser;
 
 import neon.core.Style;
 
@@ -8,18 +8,16 @@ function camelToKebabCase(str:String):String {
 }
 
 function parseCssValue(style:Dynamic, key:String):String {
-	var field = Reflect.field(style, key);
+	var field:Dynamic = Reflect.field(style, key);
 
 	switch (key) {
 		case "fontSize", "width", "height", "top", "left", "right", "bottom", "margin", "maxWidth", "maxHeight", "marginTop", "marginRight", "marginBottom",
 			"marginLeft", "padding", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "borderWidth", "borderTopWidth", "borderRightWidth",
 			"borderBottomWidth", "borderLeftWidth":
-			{
-				if (Std.isOfType(field, String)) {
-					return field;
-				} else {
-					return '${Std.parseInt(field)}px';
-				}
+			if (Std.isOfType(field, String)) {
+				return field;
+			} else {
+				return '${Math.floor(field)}px';
 			}
 		default:
 			return field;
