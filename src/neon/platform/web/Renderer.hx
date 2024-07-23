@@ -5,11 +5,19 @@ import haxe.Json;
 import js.html.Element;
 import js.Browser.document;
 import neon.core.State;
+import neon.core.Renderer.renderBundles;
 import neon.platform.web.Helper;
 
-function render(element:Dynamic, container:Dynamic):Void {
+function render(container:Dynamic, element:Dynamic, ?props:Dynamic):Void {
 	injectStyleElement();
-	insert(element, container, null);
+	renderBundles.push({
+		makeElement: makeElement,
+		insert: insert,
+		prop: prop,
+		runtimeProps: runtimeProps,
+	});
+	insert(element(props), container);
+	renderBundles.pop();
 }
 
 function makeElement(tag:String):Element {
@@ -79,22 +87,18 @@ function upsert(element:Dynamic, container:Element, ?position:Int):Int {
 	return container.childNodes.length - 1;
 }
 
-function style(value:Dynamic, el:Element):Void {
-	if (Std.isOfType(value, String)) {
-		el.classList.add('neon-${value}');
-	}
-}
-
 function runtimeProps(props:Dynamic, el:Element):Void {
 	for (field in Reflect.fields(props)) {
-		if (field == "style") {
-			style(Reflect.field(props, "style"), el);
-		}
+		prop(field, Reflect.field(props, field), el);
 	}
 }
 
 function prop(prop:String, value:Dynamic, el:Element):Void {
-	if (Reflect.isFunction(value)) {
+	if (prop == "style") {
+		if (Std.isOfType(value, String)) {
+			el.classList.add('neon-${value}');
+		}
+	} else if (Reflect.isFunction(value)) {
 		var callbackId = CallbackManager.registerCallback(cast value);
 		el.addEventListener(prop, (event) -> CallbackManager.invokeCallback(callbackId, event));
 	} else if (prop == "class") {

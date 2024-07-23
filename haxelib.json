@@ -4,7 +4,7 @@
   "license": "MIT",
   "tags": [],
   "description": "Build cross-platform app in native runtime!",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "releasenote": "Initial release, bare minimal POC on Javascript/Browser runtime",
   "contributors": [
     "fluctlight-kayaba"

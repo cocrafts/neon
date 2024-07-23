@@ -1,7 +1,7 @@
 package site;
 
 import js.Browser.document;
-import neon.platform.Renderer;
+import neon.platform.web.Renderer;
 import site.components.App;
 
 typedef AppProps = {
@@ -10,6 +10,6 @@ typedef AppProps = {
 
 class Main {
 	public static function main() {
-		render(App, document.body);
+		render(document.body, App);
 	}
 }

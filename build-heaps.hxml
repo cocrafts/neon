@@ -1,0 +1,12 @@
+-cp src
+-main heaps.Main
+-dce full
+
+-lib heaps
+
+# --macro neon.core.Common.useMacro()
+# -js isn't needed, but helpful for IDE's.
+-js out/heaps/main.js
+
+-D source-map-content
+-debug

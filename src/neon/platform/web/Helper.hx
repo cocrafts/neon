@@ -49,7 +49,6 @@ function generateCSS():String {
 		for (field in Reflect.fields(style)) {
 			if (StringTools.startsWith(field, "@media")) {
 				mediaCss += generateMediaFragment(key, field, Reflect.field(style, field));
-				trace(field, "is media field");
 			} else {
 				css += '${camelToKebabCase(field)}: ${parseCssValue(style, field)};';
 			}

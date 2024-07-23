@@ -20,7 +20,7 @@ macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
 							case EField(e, _, _):
 								switch (e.expr) {
 									case EConst(CIdent(_)):
-										blocks.push(macro neon.platform.Renderer.style(${prop.expr}, el));
+										blocks.push(macro neon.core.Renderer.prop("style", ${prop.expr}, el));
 									default:
 								}
 							default:
@@ -30,20 +30,20 @@ macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
 						switch (prop.expr.expr) {
 							case EConst(CString(_, _)):
 								if (prop.field == "className") {
-									blocks.push(macro neon.platform.Renderer.prop("class", ${prop.expr}, el));
+									blocks.push(macro neon.core.Renderer.prop("class", ${prop.expr}, el));
 								} else {
-									blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
+									blocks.push(macro neon.core.Renderer.prop($v{prop.field}, ${prop.expr}, el));
 								}
 							case EConst(CInt(_, _)):
-								blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
+								blocks.push(macro neon.core.Renderer.prop($v{prop.field}, ${prop.expr}, el));
 							case EConst(CIdent(_)): /* Boolean */
-								blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
+								blocks.push(macro neon.core.Renderer.prop($v{prop.field}, ${prop.expr}, el));
 							case EField(_):
-								blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
+								blocks.push(macro neon.core.Renderer.prop($v{prop.field}, ${prop.expr}, el));
 							case EFunction(FAnonymous, f):
-								blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
+								blocks.push(macro neon.core.Renderer.prop($v{prop.field}, ${prop.expr}, el));
 							case ECall(_): /* prop as function call, e.g: Math.round(a * b) */
-								blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
+								blocks.push(macro neon.core.Renderer.prop($v{prop.field}, ${prop.expr}, el));
 							default:
 								// blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
 								Context.error("this type of prop is not supported", props.pos);
@@ -51,7 +51,7 @@ macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
 					}
 				}
 			case EConst(CIdent(ident)): /* received prop from external declaration source */
-				blocks.push(macro neon.platform.Renderer.runtimeProps($i{ident}, el));
+				blocks.push(macro neon.core.Renderer.runtimeProps($i{ident}, el));
 			case EBlock(_): // ignore empty object {}
 			default:
 				Context.error("props must be object", props.pos);
@@ -67,7 +67,7 @@ macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
 		switch (tag.expr) {
 			case EConst(CString(elementTag)):
 				return macro function() {
-					var el = neon.platform.Renderer.makeElement($v{elementTag});
+					var el = neon.core.Renderer.makeElement($v{elementTag});
 					$b{blocks};
 				}
 			default:
@@ -103,7 +103,7 @@ macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
 		expr: EArrayDecl(processedChildren),
 	});
 
-	// trace(haxe.macro.ExprTools.toString(transformedElement));
+	trace(haxe.macro.ExprTools.toString(transformedElement));
 	return transformedElement;
 }
 

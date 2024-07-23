@@ -88,11 +88,11 @@ function transformChildren(maybeChildren:Expr, blocks:Array<Expr>, localTVars:Ma
 			for (item in items) {
 				switch (item.expr) {
 					case ECall(f, args):
-						blocks.push(macro neon.platform.Renderer.insert(function() {
+						blocks.push(macro neon.core.Renderer.insert(function() {
 							return ${f}($a{args});
 						}, el));
 					case EConst(CString(_)):
-						blocks.push(macro neon.platform.Renderer.insert($e{item}, el));
+						blocks.push(macro neon.core.Renderer.insert($e{item}, el));
 					case EConst(CIdent("false")), EConst(CIdent("true")):
 						blocks.push(macro neon.platform.Renderer.insert(false, el));
 					case EConst(CIdent(id)):
@@ -101,19 +101,19 @@ function transformChildren(maybeChildren:Expr, blocks:Array<Expr>, localTVars:Ma
 
 							switch (idInfo?.t) {
 								case TFun([], TInst(_, [])): /* highly chance this is a function component */
-									blocks.push(macro neon.platform.Renderer.insert($i{id}(), el));
+									blocks.push(macro neon.core.Renderer.insert($i{id}(), el));
 								case TAbstract(_, _): /* from createComponent's children arg */
-									blocks.push(macro neon.platform.Renderer.insert($i{id}, el));
+									blocks.push(macro neon.core.Renderer.insert($i{id}, el));
 								default:
-									blocks.push(macro neon.platform.Renderer.insert($i{id}, el));
+									blocks.push(macro neon.core.Renderer.insert($i{id}, el));
 							}
 						}
 					case EFunction(_, _):
-						blocks.push(macro neon.platform.Renderer.insert(($e{item})(), el));
+						blocks.push(macro neon.core.Renderer.insert(($e{item})(), el));
 					case EObjectDecl(_), EField(_, _, _):
-						blocks.push(macro neon.platform.Renderer.insert($e{item}, el));
+						blocks.push(macro neon.core.Renderer.insert($e{item}, el));
 					case ETernary(_, _, _), EBinop(_, _, _):
-						blocks.push(macro neon.platform.Renderer.insert(function() {
+						blocks.push(macro neon.core.Renderer.insert(function() {
 							return $e{item};
 						}, el));
 					default:
