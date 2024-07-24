@@ -5,10 +5,10 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 import neon.core.Helper;
 
-macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
+macro function createElement(tag:Expr, props:Expr, ?children:Expr):Expr {
 	var localTVars = Context.getLocalTVars();
 
-	function processCreateElement(tag:Expr, props:Expr, children:Expr):Expr {
+	function processCreateElement(tag:Expr, props:Expr, ?children:Expr):Expr {
 		var blocks:Array<Expr> = [];
 		var localTVars = Context.getLocalTVars();
 
@@ -20,10 +20,27 @@ macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
 							case EField(e, _, _):
 								switch (e.expr) {
 									case EConst(CIdent(_)):
-										blocks.push(macro neon.core.Renderer.prop("style", ${prop.expr}, el));
+										blocks.push(macro neon.core.Renderer.prop("style", $e{prop.expr}, el));
 									default:
 								}
+							case EObjectDecl(items):
+								for (item in items) {
+									switch (item.expr.expr) {
+										case EConst(CInt(_)), EConst(CFloat(_)), EConst(CString(_)):
+											trace(item.expr);
+											blocks.push(macro neon.core.Renderer.style($v{item.field}, $e{item.expr}, el));
+										case ECall(_):
+											blocks.push(macro neon.core.Renderer.style($v{item.field}, function() {
+												return $e{item.expr};
+											}, el));
+										default:
+											Context.error("style attribute not supported", props.pos);
+									}
+								}
+							case EBlock([]):
+								Context.warning("empty style will be cleanup for performance", prop.expr.pos);
 							default:
+								trace(prop);
 								Context.error("this type of style is not supported", props.pos);
 						}
 					} else {
@@ -43,7 +60,9 @@ macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
 							case EFunction(FAnonymous, f):
 								blocks.push(macro neon.core.Renderer.prop($v{prop.field}, ${prop.expr}, el));
 							case ECall(_): /* prop as function call, e.g: Math.round(a * b) */
-								blocks.push(macro neon.core.Renderer.prop($v{prop.field}, ${prop.expr}, el));
+								blocks.push(macro neon.core.Renderer.prop($v{prop.field}, function() {
+									return ${prop.expr};
+								}, el));
 							default:
 								// blocks.push(macro neon.platform.Renderer.prop($v{prop.field}, ${prop.expr}, el));
 								Context.error("this type of prop is not supported", props.pos);
@@ -103,7 +122,7 @@ macro function createElement(tag:Expr, props:Expr, children:Expr):Expr {
 		expr: EArrayDecl(processedChildren),
 	});
 
-	// trace(haxe.macro.ExprTools.toString(transformedElement));
+	trace(haxe.macro.ExprTools.toString(transformedElement));
 	return transformedElement;
 }
 

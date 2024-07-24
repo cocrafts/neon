@@ -14,10 +14,7 @@ var Branding = createComponent(function(props:BrandingProps):Dynamic {
 	return createElement("div", {
 		style: styles.brandingContainer,
 		className: "extra",
-		click: function() {
-			props.count.set(0);
-			// js.Browser.window.open(githubLink);
-		},
+		click: function() props.count.set(0),
 	}, [
 		createElement("span", {style: styles.mainText}, [props.main, createElement("span", {}, ":"), props.count.get()]),
 		createElement("span", {style: styles.subText}, props.sub),

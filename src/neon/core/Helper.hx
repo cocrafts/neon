@@ -91,10 +91,18 @@ function transformChildren(maybeChildren:Expr, blocks:Array<Expr>, localTVars:Ma
 						blocks.push(macro neon.core.Renderer.insert(function() {
 							return ${f}($a{args});
 						}, el));
-					case EConst(CString(_)):
-						blocks.push(macro neon.core.Renderer.insert($e{item}, el));
+					case EConst(CString(val)):
+						if (val.indexOf("${") >= 0 && val.indexOf("()") > 0) {
+							blocks.push(macro neon.core.Renderer.insert(function() {
+								return $e{item};
+							}, el));
+						} else {
+							blocks.push(macro neon.core.Renderer.insert($e{item}, el));
+						}
 					case EConst(CIdent("false")), EConst(CIdent("true")):
-						blocks.push(macro neon.platform.Renderer.insert(false, el));
+						blocks.push(macro neon.core.Renderer.insert(false, el));
+					case EConst(CInt(_)), EConst(CFloat(_)):
+						blocks.push(macro neon.core.Renderer.insert($e{item}, el));
 					case EConst(CIdent(id)):
 						{
 							var idInfo = localTVars.get(id);

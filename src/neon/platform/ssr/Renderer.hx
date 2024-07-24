@@ -7,7 +7,7 @@ import neon.parser.HtmlDocument;
 import neon.core.Renderer;
 import neon.platform.browser.Helper;
 
-function renderToString(template:String, element:Dynamic, ?props:Dynamic):String {
+function render(template:String, element:Dynamic, ?props:Dynamic):String {
 	var document = new HtmlDocument(template);
 	var body = document.find("body")[0];
 	var head = document.find("head")[0];
@@ -16,6 +16,7 @@ function renderToString(template:String, element:Dynamic, ?props:Dynamic):String
 	renderBundles.push({
 		makeElement: makeElement,
 		insert: insert,
+		style: style,
 		prop: prop,
 		runtimeProps: runtimeProps,
 	});
@@ -71,12 +72,15 @@ function addClass(el:HtmlNodeElement, value:String):Void {
 	}
 }
 
-function setInlineStyle(el:HtmlNodeElement, styles:Dynamic):Void {
-	var styleString = "";
+function style(attribute:String, value:Dynamic, el:HtmlNodeElement):Void {
+	var key = camelToKebabCase(attribute);
+	var styleString = el.getAttribute("style");
 
-	for (attribute in Reflect.fields(styles)) {
-		var key = camelToKebabCase(attribute);
-		var value = parseCssValue(styles, attribute);
+	if (Reflect.isFunction(value)) {
+		var value = parseCssValue(attribute, value());
+		styleString += '${key}: ${value};';
+	} else {
+		var value = parseCssValue(attribute, value);
 		styleString += '${key}: ${value};';
 	}
 
@@ -87,13 +91,21 @@ function prop(prop:String, value:Dynamic, el:HtmlNodeElement):Void {
 	if (prop == "style") {
 		if (Std.isOfType(value, String)) {
 			addClass(el, value);
-		} else {
-			setInlineStyle(el, value);
+		} else if (Reflect.isObject(value)) {
+			for (attribute in Reflect.fields(value)) {
+				style(attribute, Reflect.field(value, attribute), el);
+			}
 		}
 	} else if (prop == "class") {
 		addClass(el, value);
 	} else {
-		el.setAttribute(prop, value);
+		if (!Reflect.isFunction(value)) {
+			if (Std.isOfType(value, Int) || Std.isOfType(value, Float)) {
+				el.setAttribute(prop, Std.string(value));
+			} else {
+				el.setAttribute(prop, Std.string(value));
+			}
+		}
 	}
 }
 

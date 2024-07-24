@@ -4,25 +4,37 @@ import neon.core.State;
 import neon.core.Renderer.renderBundles;
 
 function makeElement(tag:String):Dynamic {
-	return new h2d.Text(hxd.res.DefaultFont.get());
+	switch (tag) {
+		case "Text":
+			return new h2d.Text(hxd.res.DefaultFont.get());
+		case "Object":
+			return new h2d.Object();
+		// case "Drawable":
+		// 	return new h2d.Drawable(s3d);
+		case "Sphere":
+			return new h3d.prim.Sphere(0, 0, 0);
+		default:
+			trace(tag);
+			throw 'Element not supported ${tag}';
+	}
 }
 
 function render(container:Dynamic, element:Dynamic, ?props:Dynamic):Void {
 	renderBundles.push({
 		makeElement: makeElement,
 		insert: insert,
+		style: function(_, _, _) {},
 		prop: prop,
 		runtimeProps: runtimeProps,
 	});
-	trace(element);
 	insert(element(props), container);
 	renderBundles.pop();
 }
 
-function callMethod(method:String, node:Dynamic, el:Dynamic):Void {
+function callMethod(method:String, node:Dynamic, args:Array<Dynamic>):Void {
 	var func = Reflect.field(node, method);
 	if (func != null) {
-		Reflect.callMethod(node, func, [el]);
+		Reflect.callMethod(node, func, args);
 	}
 }
 
@@ -35,15 +47,11 @@ function insert(node:Dynamic, container:Dynamic, ?position:Int):Int {
 			insert(item, container, position);
 		}
 	} else if (Std.isOfType(node, String)) {
-		if (Std.isOfType(container, h2d.Text)) {
-			var el:h2d.Text = container;
-			el.text = node;
-		}
+		trace('invalid String children for ${Type.typeof(container)}: ${node}');
 	} else if ((Std.isOfType(node, Int)) || Std.isOfType(node, Float)) {
-		if (Std.isOfType(container, h2d.Text)) {
-			var el:h2d.Text = container;
-			el.text = Std.string(node);
-		}
+		trace('invalid Int or Float children for ${Type.typeof(container)}: ${node}');
+	} else if ((Std.isOfType(node, Bool))) {
+		trace('invalid Bool children for ${Type.typeof(container)}: ${node}');
 	} else if (Reflect.isFunction(node)) {
 		createEffect(function() {
 			if (currentPosition == null) {
@@ -52,18 +60,45 @@ function insert(node:Dynamic, container:Dynamic, ?position:Int):Int {
 				insert(node(), container, currentPosition);
 			}
 		});
-	} else {
-		callMethod("addChild", container, node);
+	} else if (node != null) {
+		callMethod("addChild", container, [node]);
 	}
 
 	return position;
 }
 
-function prop(prop:String, attributes:Dynamic, el:Dynamic):Void {
-	if (Std.isOfType(el, h2d.Text)) {
-		trace("this is text!");
+function setAttribute(propName:String, value:Dynamic, el:Dynamic):Void {
+	var setter = Reflect.field(el, 'set_${propName}');
+	if (setter != null) {
+		Reflect.callMethod(el, setter, [value]);
+	} else {
+		Reflect.setField(el, propName, value);
 	}
-	trace("set props", prop);
+}
+
+function prop(propName:String, value:Dynamic, el:Dynamic):Void {
+	if (Reflect.isFunction(value)) {
+		createEffect(function() {
+			var reactive = value();
+			prop(propName, reactive, el);
+		});
+	} else {
+		switch (propName) {
+			case "scale":
+				var drawable:h2d.Drawable = el;
+				drawable.scale(value);
+			default:
+				switch (propName) {
+					case "text":
+						if (!Std.isOfType(value, String)) {
+							value = Std.string(value);
+						}
+					default:
+				}
+
+				setAttribute(propName, value, el);
+		}
+	}
 }
 
 function runtimeProps(props:Dynamic, el:Dynamic):Void {

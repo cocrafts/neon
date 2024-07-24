@@ -1,12 +1,14 @@
 -cp src
--main heaps.Main
+-main game.Main
 -dce full
 
 -lib heaps
+-lib hlsdl
 
 # --macro neon.core.Common.useMacro()
 # -js isn't needed, but helpful for IDE's.
--js out/heaps/main.js
+-hl game.hl
+#-js out/game/main.js
 
 -D source-map-content
 -debug

@@ -7,20 +7,18 @@ function camelToKebabCase(str:String):String {
 	return reg.map(str, (match) -> "-" + match.matched(0).toLowerCase());
 }
 
-function parseCssValue(style:Dynamic, key:String):String {
-	var field:Dynamic = Reflect.field(style, key);
-
+function parseCssValue(key:String, value:Dynamic):String {
 	switch (key) {
 		case "fontSize", "width", "height", "top", "left", "right", "bottom", "margin", "maxWidth", "maxHeight", "marginTop", "marginRight", "marginBottom",
 			"marginLeft", "padding", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "borderWidth", "borderTopWidth", "borderRightWidth",
 			"borderBottomWidth", "borderLeftWidth":
-			if (Std.isOfType(field, String)) {
-				return field;
+			if (Std.isOfType(value, String)) {
+				return value;
 			} else {
-				return '${Math.floor(field)}px';
+				return '${Math.floor(value)}px';
 			}
 		default:
-			return field;
+			return value;
 	}
 }
 
@@ -48,7 +46,7 @@ function generateCSS():String {
 			if (StringTools.startsWith(field, "@media")) {
 				mediaCss += generateMediaFragment(key, field, Reflect.field(style, field));
 			} else {
-				css += '${camelToKebabCase(field)}: ${parseCssValue(style, field)};';
+				css += '${camelToKebabCase(field)}: ${parseCssValue(field, Reflect.field(style, field))};';
 			}
 		}
 

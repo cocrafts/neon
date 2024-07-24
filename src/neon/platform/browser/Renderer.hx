@@ -13,6 +13,7 @@ function render(container:Dynamic, element:Dynamic, ?props:Dynamic):Void {
 	renderBundles.push({
 		makeElement: makeElement,
 		insert: insert,
+		style: style,
 		prop: prop,
 		runtimeProps: runtimeProps,
 	});
@@ -70,6 +71,10 @@ function insert(node:Dynamic, container:Element, ?position:Int):Int {
 }
 
 function setAttribute(el:js.html.Element, name:String, value:Dynamic) {
+	if (el.getAttribute(name) == value) {
+		return;
+	}
+
 	if (StringTools.endsWith(el.namespaceURI, "svg")) {
 		el.setAttributeNS(null, name, value);
 	} else {
@@ -90,32 +95,43 @@ function upsert(element:Dynamic, container:Element, ?position:Int):Int {
 	return container.childNodes.length - 1;
 }
 
-function setInlineStyle(el:Element, styles:Dynamic):Void {
-	var styleString = "";
+function style(attribute:String, value:Dynamic, el:Element):Void {
+	var key = camelToKebabCase(attribute);
 
-	for (attribute in Reflect.fields(styles)) {
-		var key = camelToKebabCase(attribute);
-		var value = parseCssValue(styles, attribute);
-		styleString += '${key}: ${value};';
+	if (Reflect.isFunction(value)) {
+		createEffect(function() {
+			var value = parseCssValue(attribute, value());
+			Reflect.setField(el.style, key, value);
+		});
+	} else {
+		var value = parseCssValue(attribute, value);
+		Reflect.setField(el.style, key, value);
 	}
-
-	el.setAttribute("style", styleString);
 }
 
-function prop(prop:String, value:Dynamic, el:Element):Void {
-	if (prop == "style") {
-		if (Std.isOfType(value, String)) {
-			el.classList.add('neon-${value}');
-		} else {
-			setInlineStyle(el, value);
-		}
-	} else if (Reflect.isFunction(value)) {
-		var callbackId = CallbackManager.registerCallback(cast value);
-		el.addEventListener(prop, (event) -> CallbackManager.invokeCallback(callbackId, event));
-	} else if (prop == "class") {
-		el.classList.add(value);
+function prop(propName:String, value:Dynamic, el:Element):Void {
+	if (propName != "click" && Reflect.isFunction(value)) {
+		createEffect(function() {
+			var reactive = value();
+			prop(propName, reactive, el);
+		});
 	} else {
-		setAttribute(el, prop, value);
+		if (propName == "style") {
+			if (Std.isOfType(value, String)) {
+				el.classList.add('neon-${value}');
+			} else if (Reflect.isObject(value)) {
+				for (attribute in Reflect.fields(value)) {
+					style(attribute, Reflect.field(value, attribute), el);
+				}
+			}
+		} else if (propName == "click" && Reflect.isFunction(value)) {
+			var callbackId = CallbackManager.registerCallback(cast value);
+			el.addEventListener(propName, (event) -> CallbackManager.invokeCallback(callbackId, event));
+		} else if (propName == "class") {
+			el.classList.add(value);
+		} else {
+			setAttribute(el, propName, value);
+		}
 	}
 }
 
