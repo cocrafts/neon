@@ -12,6 +12,9 @@ macro function createElement(tag:Expr, props:Expr, ?children:Expr):Expr {
 		var blocks:Array<Expr> = [];
 		var localTVars = Context.getLocalTVars();
 
+		/* transform props, translate props, including style 
+		 * into closured function blocks */
+
 		switch (props.expr) {
 			case EObjectDecl(fields):
 				for (prop in fields) {
@@ -76,9 +79,58 @@ macro function createElement(tag:Expr, props:Expr, ?children:Expr):Expr {
 				Context.error("props must be object", props.pos);
 		}
 
-		var childrenError = transformChildren(children, blocks, localTVars);
-		if (childrenError != null) {
-			Context.error(childrenError.message, childrenError.pos);
+		/* transform children make closured function blocks,
+		 * those closures also setup component hierarchy on it's execution (run only once on startup) */
+
+		var safeChildren = ensureArray(children);
+
+		switch (children.expr) {
+			case EArrayDecl(items):
+				for (item in items) {
+					switch (item.expr) {
+						case ECall(f, args):
+							blocks.push(macro neon.core.Renderer.insert(function() {
+								return ${f}($a{args});
+							}, el));
+						case EConst(CString(val)):
+							if (val.indexOf("${") >= 0 && val.indexOf("()") > 0) {
+								blocks.push(macro neon.core.Renderer.insert(function() {
+									return $e{item};
+								}, el));
+							} else {
+								blocks.push(macro neon.core.Renderer.insert($e{item}, el));
+							}
+						case EConst(CIdent("false")), EConst(CIdent("true")):
+							blocks.push(macro neon.core.Renderer.insert(false, el));
+						case EConst(CInt(_)), EConst(CFloat(_)):
+							blocks.push(macro neon.core.Renderer.insert($e{item}, el));
+						case EConst(CIdent(id)):
+							{
+								var idInfo = localTVars.get(id);
+
+								switch (idInfo?.t) {
+									case TFun([], TInst(_, [])): /* highly chance this is a function component */
+										blocks.push(macro neon.core.Renderer.insert($i{id}(), el));
+									case TAbstract(_, _): /* from createComponent's children arg */
+										blocks.push(macro neon.core.Renderer.insert($i{id}, el));
+									default:
+										Context.warning("double check this children type", item.pos);
+										blocks.push(macro neon.core.Renderer.insert($i{id}, el));
+								}
+							}
+						case EFunction(_, _):
+							blocks.push(macro neon.core.Renderer.insert(($e{item})(), el));
+						case EObjectDecl(_), EField(_, _, _):
+							blocks.push(macro neon.core.Renderer.insert($e{item}, el));
+						case ETernary(_, _, _), EBinop(_, _, _):
+							blocks.push(macro neon.core.Renderer.insert(function() {
+								return $e{item};
+							}, el));
+						default:
+							return Context.error('un-handled children type ${item.expr.getName()}', item.pos);
+					}
+				}
+			default:
 		}
 
 		blocks.push(macro return el);
@@ -122,7 +174,7 @@ macro function createElement(tag:Expr, props:Expr, ?children:Expr):Expr {
 		expr: EArrayDecl(processedChildren),
 	});
 
-	trace(haxe.macro.ExprTools.toString(transformedElement));
+	// trace(haxe.macro.ExprTools.toString(transformedElement));
 	return transformedElement;
 }
 

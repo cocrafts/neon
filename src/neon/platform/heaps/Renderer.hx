@@ -14,7 +14,6 @@ function makeElement(tag:String):Dynamic {
 		case "Sphere":
 			return new h3d.prim.Sphere(0, 0, 0);
 		default:
-			trace(tag);
 			throw 'Element not supported ${tag}';
 	}
 }
