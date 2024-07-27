@@ -26,7 +26,7 @@ function generateMediaFragment(field:String, media:String, style:Dynamic):String
 	var fragment:String = '${media} { .neon-${field} {';
 
 	for (field in Reflect.fields(style)) {
-		fragment += '${camelToKebabCase(field)}: ${parseCssValue(style, field)};';
+		fragment += '${camelToKebabCase(field)}: ${parseCssValue(field, Reflect.field(style, field))};';
 	}
 
 	fragment += "} }\n";

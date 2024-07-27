@@ -82,7 +82,7 @@ macro function createElement(tag:Expr, props:Expr, ?children:Expr):Expr {
 		/* transform children make closured function blocks,
 		 * those closures also setup component hierarchy on it's execution (run only once on startup) */
 
-		var safeChildren = ensureArray(children);
+		var children = ensureArray(children);
 
 		switch (children.expr) {
 			case EArrayDecl(items):
@@ -127,7 +127,7 @@ macro function createElement(tag:Expr, props:Expr, ?children:Expr):Expr {
 								return $e{item};
 							}, el));
 						default:
-							return Context.error('un-handled children type ${item.expr.getName()}', item.pos);
+							Context.error('un-handled children type ${item.expr.getName()}', item.pos);
 					}
 				}
 			default:
@@ -142,7 +142,7 @@ macro function createElement(tag:Expr, props:Expr, ?children:Expr):Expr {
 					$b{blocks};
 				}
 			default:
-				return Context.error("invalid tag, should be string or function", tag.pos);
+				return Context.error("invalid tag, must be a string", tag.pos);
 		}
 	}
 

@@ -11,12 +11,16 @@ typedef BrandingProps = {
 };
 
 var Branding = createComponent(function(props:BrandingProps):Dynamic {
+	var doubleCount = function() {
+		return props.count.get() * 2;
+	}
+
 	return createElement("div", {
 		style: styles.brandingContainer,
 		className: "extra",
 		click: function() props.count.set(0),
 	}, [
-		createElement("span", {style: styles.mainText}, [props.main, createElement("span", {}, ":"), props.count.get()]),
+		createElement("span", {style: styles.mainText}, [props.main, createElement("span", {}, ":"), doubleCount()]),
 		createElement("span", {style: styles.subText}, props.sub),
 	]);
 });

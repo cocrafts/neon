@@ -45,7 +45,6 @@ macro function createStyle(e:Expr):Expr {
 					case EBlock([]):
 						injectStyle(style.field, [], style.expr.pos);
 					default:
-						trace(style);
 						Context.error("invalid style definition", style.expr.pos);
 				}
 			}
