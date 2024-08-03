@@ -1,0 +1,20 @@
+body {
+    background-color: #282c34;
+    color: white;
+    font-family: sans-serif;
+}
+
+div#main {
+    margin: 100px;
+    padding: 20px;
+    border: 1px solid #61dafb;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    border: none;
+    background-color: #61dafb;
+    color: white;
+    cursor: pointer;
+}

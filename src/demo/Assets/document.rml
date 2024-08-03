@@ -1,0 +1,11 @@
+<rml>
+<head>
+    <link type="text/css" href="style.rcss" />
+</head>
+<body>
+    <div id="main">
+        <p>Hello, RmlUI!</p>
+        <button>Click Me!</button>
+    </div>
+</body>
+</rml>
