@@ -67,12 +67,13 @@ var styles = createStyle({
 ### Platform support status:
 - [x] Browser
 - [x] Server side rendering, including `Node.js` (good for portable runtime like AWS Lambda Edge), and also include `C++` target (offer blazing fast performance)
+- [x] macOS (POC implementation)
+- [x] Windows (POC implementation)
+- [x] Linux (POC implementation)
 - [ ] iOS
 - [ ] Android
-- [ ] watchOS
-- [ ] wearOS
-- [ ] macOS
-- [ ] Windows
-- [ ] Linux
-- [ ] Other targets like VR/AR, smartTv, IoT devices..
+- [ ] Other targets like VR/AR, smartWatch, smartTv, IoT devices..
 
+
+### Screenshots:
+![image](document/assets/macOs.png)
