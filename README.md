@@ -6,8 +6,8 @@
 [Neon][neon-link] is a library for creating cross-platform user interfaces that run everywhere on native runtime!
 
 ### [Neon][neon-link] unique characteristics:
-- Run directly on native runtime, no intermediate/embedded runtime - which allow [Neon][neon-link] easily target devices like: `IoT`, `smartWatch` where embedded runtime e.g Javascript is too expensive to afford.
-- Instead of using a `Virtual DOM` or Runtime Diffing, [Neon][neon-link] generate/optimize its templates at Compile Time (like [Svelte](https://svelte.dev/)) and updates them with fine-grained reactions (like [SolidJS](https://www.solidjs.com/)) for the best performance.
+- Bare metal/native, no intermediate/embedded runtime - which allow [Neon][neon-link] easily target devices like: `IoT`, `smartWatch` where embedded runtime e.g Javascript is too expensive to afford.
+- Instead of using `Virtual DOM` or Runtime Diffing, [Neon][neon-link] generate/optimize its templates at Compile Time (like [Svelte](https://svelte.dev/)) and updates them with fine-grained reactions (like [SolidJS](https://www.solidjs.com/)) for the best performance.
 - [Neon][neon-link] use [Haxe](https://haxe.org/) language/syntax - part of [ECMAScript](https://ecma-international.org/publications-and-standards/standards/ecma-262/) family, Javascript developer would find it extremely familiar, like home.
 
 ## At a Glance:
@@ -76,4 +76,4 @@ var styles = createStyle({
 
 
 ### Screenshots:
-![image](document/assets/macOs.png)
+![macOs Sonoma 14.2.1](/document/assets/macOS.png)
