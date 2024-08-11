@@ -1,0 +1,19 @@
+-cp src
+-main app.Main
+
+#-lib reflaxe.cpp
+#-D cpp-output=iOS/Hype/Haxe
+#--cmd rm iOS/Hype/Haxe/src/_main_.cpp
+
+#https://stackoverflow.com/questions/27343675/how-to-create-ios-osx-library-from-haxe-and-use-it-in-native-application
+-lib hxcpp
+
+--each
+
+-cpp out/app
+
+--next
+
+-cpp out/app
+-D static_link
+-D actuate

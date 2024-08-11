@@ -1,0 +1,19 @@
+{
+	"name": "xcode build server",
+	"version": "0.2",
+	"bspVersion": "2.0",
+	"languages": [
+		"c",
+		"cpp",
+		"objective-c",
+		"objective-cpp",
+		"swift"
+	],
+	"argv": [
+		"/usr/local/bin/xcode-build-server"
+	],
+	"workspace": "/Volumes/data/Metacraft/neon/iOS/Hype.xcodeproj/project.xcworkspace",
+	"build_root": "/Users/le/Library/Developer/Xcode/DerivedData/Hype-bcnvijymygexxgfdiilnwfknfnqd",
+	"scheme": "Hype",
+	"kind": "xcode"
+}
