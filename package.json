@@ -14,10 +14,14 @@
     "@metacraft/tsconfig": "^0.0.2",
     "sst": "^2.43.2",
     "vite": "^5.2.0",
-    "vite-plugin-haxe": "^0.1.2"
+    "vite-plugin-haxe": "^0.1.2",
+    "vite-plugin-top-level-await": "^1.4.4"
   },
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "yarn@4.2.2"
+  "packageManager": "yarn@4.2.2",
+  "dependencies": {
+    "yoga-layout": "^3.1.0"
+  }
 }
