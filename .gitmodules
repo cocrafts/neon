@@ -1,3 +1,12 @@
 [submodule "lib/yoga"]
 	path = lib/yoga
 	url = https://github.com/facebook/yoga.git
+[submodule "lib/bgfx"]
+	path = lib/bgfx
+	url = https://github.com/bkaradzic/bgfx.git
+[submodule "lib/bimg"]
+	path = lib/bimg
+	url = https://github.com/bkaradzic/bimg.git
+[submodule "lib/bx"]
+	path = lib/bx
+	url = https://github.com/bkaradzic/bx.git

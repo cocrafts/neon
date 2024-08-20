@@ -1,0 +1,6 @@
+-cp src
+-main Main
+
+-lib reflaxe.cpp
+-D cpp-output=generated
+--cmd rm generated/src/_main_.cpp
