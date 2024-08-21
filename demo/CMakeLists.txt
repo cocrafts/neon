@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(NeonDemo LANGUAGES Swift CXX)
+project(neon LANGUAGES Swift CXX OBJC)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Generate compile_commands.json as lsp for Clangd
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
@@ -20,15 +20,18 @@ include_directories(
 )
 
 file(GLOB_RECURSE SOURCES
-    "${CMAKE_SOURCE_DIR}/native/include/*.h"}
-    "${CMAKE_SOURCE_DIR}/native/include/*.hpp"}
-    "${CMAKE_SOURCE_DIR}/native/src/*.cpp"}
-    "${CMAKE_SOURCE_DIR}/native/src/*.swift"}
-    "${CMAKE_SOURCE_DIR}/generated/include/*.h"}
-    "${CMAKE_SOURCE_DIR}/generated/src/*.cpp"}
+    "${CMAKE_SOURCE_DIR}/native/include/*.h"
+    "${CMAKE_SOURCE_DIR}/native/include/*.hpp"
+    "${CMAKE_SOURCE_DIR}/native/src/*.cpp"
+    "${CMAKE_SOURCE_DIR}/native/src/*.swift"
+    "${CMAKE_SOURCE_DIR}/generated/include/*.h"
+    "${CMAKE_SOURCE_DIR}/generated/src/*.cpp"
 )
 
-add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${SOURCES})
+file(GLOB_RECURSE NEON_SOURCES "${CMAKE_SOURCE_DIR}/src/neon/platform/swiftui/native/*.swift")
+source_group("Neon/Core" FILES ${NEON_SOURCES})
+
+add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${SOURCES} ${NEON_SOURCES})
 
 # Register yoga as dependency
 set(YOGA_PATH "${CMAKE_SOURCE_DIR}/../lib/yoga")
@@ -41,15 +44,16 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/Info.plist
     XCODE_ATTRIBUTE_SWIFT_VERSION 5.0
     XCODE_ATTRIBUTE_SWIFT_OBJC_BRIDGING_HEADER "native/include/Bridging-Header.h"
-    XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "-"
+    XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "4R7EAZY462"
+    # XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Development"
+    XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Automatic"
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE "-framework SwiftUI")
-
 target_link_libraries(${PROJECT_NAME} PRIVATE
+    "-framework Cocoa"
     "-framework AppKit"
-    "-framework Foundation"
-    "-framework CoreGraphics"
+    # "-framework Foundation"
+    # "-framework CoreGraphics"
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
