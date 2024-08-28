@@ -34,6 +34,9 @@ file(GLOB_RECURSE SOURCES
 	"${CMAKE_SOURCE_DIR}/native/src/*.swift"
 )
 
+set(GENERATED_EXCLUDE_FILES "${CMAKE_SOURCE_DIR}/generated/src/_main_.cpp")
+list(REMOVE_ITEM SOURCES ${GENERATED_EXCLUDE_FILES})
+
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCES} ${NEON_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE
 	"${CMAKE_SOURCE_DIR}/native/include"

@@ -1,3 +1,6 @@
-#include "Bridge.h"
+#pragma once
+
 #include "Main.h"
-//#include "neon_platform_swiftui_Renderer.h"
+#include "NeonBridge.h"
+#include "NeonCore.h"
+// #include "neon_platform_swiftui_Renderer.h"

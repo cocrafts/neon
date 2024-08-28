@@ -1,12 +1,12 @@
 import UIKit
+import CxxStdlib
+
+var catalystRootView: UIView = UIView()
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 	var window: UIWindow?
 
 	func scene(_ scene: UIScene, willConnectTo _: UISceneSession, options _: UIScene.ConnectionOptions) {
-		print("scene loaded!")
-		Main.main()
-
 		if let windowScene = scene as? UIWindowScene {
 			window = UIWindow(windowScene: windowScene)
 			let viewController = ViewController()
@@ -19,15 +19,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 class ViewController: UIViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		print("inside!")
 
 		view.backgroundColor = .red
-
-		let label = UILabel()
-		label.text = "Hello, Catalyst!!"
-		label.textAlignment = .center
-		label.frame = view.bounds
-
-		view.addSubview(label)
+		catalystRootView = view
+		Main.main()
 	}
+}
+
+public func getRootElement() -> Element {
+	return Element.init(view: catalystRootView)
 }

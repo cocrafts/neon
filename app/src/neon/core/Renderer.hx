@@ -5,33 +5,46 @@ import neon.core.Element;
 typedef RenderBundle = {
 	var makeElement:(tag:String) -> Element;
 	var insert:(node:Element, container:Element, ?position:Int) -> Int;
-	var style:(attribute:String, value:String, el:Element) -> Void;
-	var prop:(prop:String, value:String, el:Element) -> Void;
-	var runtimeProps:(props:Map<String, String>, el:Element) -> Void;
+	var style:(attribute:String, value:Any, el:Element) -> Void;
+	var prop:(propName:String, value:Any, el:Element) -> Void;
+	var props:(props:Map<String, String>, el:Element) -> Void;
 };
 
-var renderBundles:Array<RenderBundle> = [];
+@:headerInclude("NeonCore.h")
+@:headerInclude("neon-Swift.h")
+@:headerInclude("haxe_ds_StringMap.h")
+class Renderer {
+	public static var renderBundles = new Array<RenderBundle>();
 
-function getCurrentBundle():RenderBundle {
-	return renderBundles[renderBundles.length - 1];
-}
+	public static function registerBundle(bundle:RenderBundle):Array<RenderBundle> {
+		renderBundles.push(bundle);
+		return renderBundles;
+	}
 
-function makeElement(tag:String):Element {
-	return getCurrentBundle().makeElement(tag);
-}
+	public static function freeBundle():Array<RenderBundle> {
+		renderBundles.pop();
+		return renderBundles;
+	}
 
-function insert(node:Element, container:Element, ?position:Int):Int {
-	return getCurrentBundle().insert(node, container, position);
-}
+	public static function getCurrentBundle():RenderBundle {
+		return renderBundles[renderBundles.length - 1];
+	}
 
-function style(attribute:String, value:String, el:Element):Void {
-	return getCurrentBundle()?.style(attribute, value, el);
-}
+	public static function makeElement(tag:String):Element {
+		return getCurrentBundle().makeElement(tag);
+	}
 
-function prop(prop:String, value:String, el:Element):Void {
-	return getCurrentBundle().prop(prop, value, el);
-}
+	public static function insert(node:Element, container:Element, ?position:Int):Int {
+		return 0;
+	}
 
-function runtimeProps(props:Map<String, String>, el:Element):Void {
-	return getCurrentBundle().runtimeProps(props, el);
+	public static function style(attribute:String, value:Any, el:Element):Void {
+		getCurrentBundle().style(attribute, value, el);
+	}
+
+	public static function prop(prop:String, value:Any, el:Element):Void {
+		getCurrentBundle().prop(prop, value, el);
+	}
+
+	public static function props(props:Map<String, String>, el:Element):Void {}
 }

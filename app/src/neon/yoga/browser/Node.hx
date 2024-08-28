@@ -114,7 +114,7 @@ class YogaNode {
 	public var node:YogaNodeRef;
 
 	public function new(?ref:YogaNodeRef) {
-		node = ref != null ? null : untyped __js__("window.__yoga.Node.create()");
+		node = ref != null ? null : untyped js.Syntax.code("window.__yoga.Node.create()");
 	}
 
 	function addChild(child:YogaNodeRef, index:Int) {

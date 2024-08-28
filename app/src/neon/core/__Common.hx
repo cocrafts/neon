@@ -5,12 +5,15 @@ import haxe.macro.Context;
 import neon.core.Helper;
 
 macro function createElement(tag:Expr, props:Expr, ?children:Expr):Expr {
-	function innerCreateElement(tag:Expr, props:Expr, ?children:Expr):Expr {
+	var localTVars = Context.getLocalTVars();
+
+	function processCreateElement(tag:Expr, props:Expr, ?children:Expr):Expr {
 		var blocks:Array<Expr> = [];
 		var localTVars = Context.getLocalTVars();
 
 		/* transform props, translate props, including style 
 		 * into closured function blocks */
+
 		switch (props.expr) {
 			case EObjectDecl(fields):
 				for (prop in fields) {
@@ -26,6 +29,7 @@ macro function createElement(tag:Expr, props:Expr, ?children:Expr):Expr {
 								for (item in items) {
 									switch (item.expr.expr) {
 										case EConst(CInt(_)), EConst(CFloat(_)), EConst(CString(_)):
+											trace(item.expr);
 											blocks.push(macro neon.core.Renderer.style($v{item.field}, $e{item.expr}, el));
 										case ECall(_):
 											blocks.push(macro neon.core.Renderer.style($v{item.field}, function() {
@@ -76,7 +80,9 @@ macro function createElement(tag:Expr, props:Expr, ?children:Expr):Expr {
 
 		/* transform children make closured function blocks,
 		 * those closures also setup component hierarchy on it's execution (run only once on startup) */
+
 		var children = ensureArray(children);
+
 		switch (children.expr) {
 			case EArrayDecl(items):
 				for (item in items) {
@@ -126,12 +132,13 @@ macro function createElement(tag:Expr, props:Expr, ?children:Expr):Expr {
 			default:
 		}
 
+		blocks.push(macro return el);
+
 		switch (tag.expr) {
-			case EConst(CString(tag)):
-				return macro function():neon.core.Element {
-					var el = neon.core.Renderer.makeElement($v{tag});
+			case EConst(CString(elementTag)):
+				return macro function() {
+					var el = neon.core.Renderer.makeElement($v{elementTag});
 					$b{blocks};
-					return el;
 				}
 			default:
 				return Context.error("invalid tag, must be a string", tag.pos);
@@ -146,12 +153,13 @@ macro function createElement(tag:Expr, props:Expr, ?children:Expr):Expr {
 						switch expr.expr {
 							case EConst(CIdent(functionName)):
 								if (functionName == "createElement") {
-									return innerCreateElement(args[0], args[1], args[2]);
+									return processCreateElement(args[0], args[1], args[2]);
 								}
 							default:
 						}
 					default:
 				}
+
 				return child;
 			});
 		case EConst(_), ECall(_): // Single constant children
@@ -160,12 +168,11 @@ macro function createElement(tag:Expr, props:Expr, ?children:Expr):Expr {
 			Context.error("invalid children", children.pos);
 	}
 
-	var transformedElement = innerCreateElement(tag, props, {
+	var transformedElement = processCreateElement(tag, props, {
 		pos: children.pos,
 		expr: EArrayDecl(processedChildren),
 	});
 
-	trace(haxe.macro.ExprTools.toString(transformedElement));
-
+	// trace(haxe.macro.ExprTools.toString(transformedElement));
 	return transformedElement;
 }

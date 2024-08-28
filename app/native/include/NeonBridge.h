@@ -1,7 +1,11 @@
+#pragma once
+
 #include "iostream"
-#include <stdio.h>
+#include "memory"
+#include "stdio.h"
 
 namespace neon::bridge {
 void justAnotherMethod();
 void render();
+void onApplicationReady();
 } // namespace neon::bridge

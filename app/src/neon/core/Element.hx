@@ -1,5 +1,9 @@
 package neon.core;
 
-interface Element {
-	function setProp(key:String, value:String):Void;
+@:headerInclude("neon-Swift.h")
+@:valueType
+@:native("neon::Element") extern class Element {
+	public function new();
+	public function setProp(key:String, value:String):Void;
+	public function addChild(el:Element):Void;
 }
