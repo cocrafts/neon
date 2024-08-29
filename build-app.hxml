@@ -1,0 +1,11 @@
+-cp app/src
+-main Main
+#-dce full
+
+-lib reflaxe.cpp
+-D cpp-output=app/generated
+# --cmd rm app/generated/src/_main_.cpp
+# --cmd ruby lib/cmake/reflaxe-patch.rb
+# -cpp app/generated
+
+-debug

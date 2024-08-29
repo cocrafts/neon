@@ -1,0 +1,4 @@
+-cp app/src
+-main Main
+
+-js out/browser
